@@ -33,6 +33,14 @@ public class Swimmer {
         this.specialization = specialization;
     }
 
+    public Swimmer(String name, Coach coach, SwimmingStyle specialization) {
+        this.uuid = UUID.randomUUID();
+        this.name = name;
+        this.coach = coach;
+        this.specialization = specialization;
+        coach.getSwimmers().add(this);
+    }
+
     public void assignCoach(Coach coach) {
         this.coach = coach;
     }
