@@ -1,0 +1,35 @@
+package aui.swimmer;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Service
+public class SwimmerService {
+    private final SwimmerRepository repository;
+
+    @Autowired
+    public SwimmerService(SwimmerRepository repository) {
+        this.repository = repository;
+    }
+
+    public Optional<Swimmer> find(UUID id) {
+        return repository.find(id);
+    }
+
+    public List<Swimmer> findAll() {
+        return repository.findAll();
+    }
+
+    public void create(Swimmer entity) {
+        repository.create(entity);
+    }
+
+    public void delete(Swimmer entity) {
+        repository.delete(entity);
+    }
+}
+

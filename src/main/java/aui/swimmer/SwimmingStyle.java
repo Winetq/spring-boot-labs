@@ -1,6 +1,6 @@
-package aui.domain;
+package aui.swimmer;
 
-enum SwimmingStyle {
+public enum SwimmingStyle {
     BUTTERFLY,
     BREASTSTROKE,
     BACKSTROKE,

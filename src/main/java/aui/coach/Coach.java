@@ -1,26 +1,33 @@
-package aui.domain;
+package aui.coach;
 
+import aui.swimmer.Swimmer;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 
 @Component
-final class Coach {
+@NoArgsConstructor
+@EqualsAndHashCode
+@ToString
+public class Coach {
     @Getter
-    private final UUID uuid;
+    private UUID uuid;
 
     @Getter
-    private final String name;
+    private String name;
 
     @Getter
-    private final List<Swimmer> swimmers;
+    private List<Swimmer> swimmers;
 
     @Getter
     private int level;
 
-    Coach(String name, List<Swimmer> swimmers, int level) {
+    public Coach(String name, List<Swimmer> swimmers, int level) {
         this.uuid = UUID.randomUUID();
         this.name = name;
         this.swimmers = swimmers;
@@ -32,15 +39,8 @@ final class Coach {
         swimmers.forEach(x -> x.assignCoach(this));
     }
 
-    void incCoachLevel() {
-        level++;
-    }
-
-    void decCoachLevel() {
-        level--;
-    }
-
-    void addSwimmer(Swimmer swimmer) {
+    public void addSwimmer(Swimmer swimmer) {
+        swimmer.getCoach().getSwimmers().remove(swimmer);
         swimmers.add(swimmer);
         swimmer.assignCoach(this);
     }
