@@ -7,19 +7,25 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.*;
 import java.util.UUID;
 
 @Component
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
+@Entity
+@Table(name = "swimmers")
 public class Swimmer {
+    @Id
     @Getter
     private UUID uuid;
 
+    @Column(name = "swimmer_name")
     @Getter
     private String name;
 
+    @ManyToOne(fetch = FetchType.LAZY)
     @Getter
     @ToString.Exclude
     private Coach coach;
