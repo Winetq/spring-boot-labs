@@ -17,7 +17,7 @@ public class SwimmerService {
     }
 
     public Optional<Swimmer> find(UUID id) {
-        return repository.find(id);
+        return repository.findById(id);
     }
 
     public List<Swimmer> findAll() {
@@ -25,7 +25,7 @@ public class SwimmerService {
     }
 
     public void create(Swimmer entity) {
-        repository.create(entity);
+        repository.save(entity);
     }
 
     public void delete(Swimmer entity) {

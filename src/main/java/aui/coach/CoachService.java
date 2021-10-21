@@ -17,7 +17,7 @@ public class CoachService {
     }
 
     public Optional<Coach> find(UUID id) {
-        return repository.find(id);
+        return repository.findById(id);
     }
 
     public List<Coach> findAll() {
@@ -25,7 +25,7 @@ public class CoachService {
     }
 
     public void create(Coach entity) {
-        repository.create(entity);
+        repository.save(entity);
     }
 
     public void delete(Coach entity) {
