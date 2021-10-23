@@ -45,12 +45,29 @@ public class SwimmerController {
     public ResponseEntity<String> createSwimmerWithCoach(@PathVariable String name, @PathVariable Long coach_id,
                                                          @PathVariable String specialization) {
         Optional<Coach> coach = coachService.find(coach_id);
-        if (coach.isEmpty()) return new ResponseEntity<>("This coach is not exist!", HttpStatus.NOT_FOUND);
+        if (coach.isEmpty()) return new ResponseEntity<>("This coach does not exist!", HttpStatus.NOT_FOUND);
         List<Swimmer> swimmers = swimmerService.findAll();
         Swimmer swimmer = new Swimmer(name, coach.get(), SwimmingStyle.of(specialization));
         if (swimmers.contains(swimmer)) return new ResponseEntity<>("This swimmer was already created!", HttpStatus.CREATED);
         swimmerService.create(swimmer);
         return new ResponseEntity<>("A swimmer was added to the database!", HttpStatus.OK);
+    }
+
+    @PutMapping("{id}/{specialization}")
+    public ResponseEntity<String> changeSwimmerSpecialization(@PathVariable Long id, @PathVariable String specialization) {
+        Optional<Swimmer> swimmer = swimmerService.find(id);
+        if (swimmer.isEmpty()) return new ResponseEntity<>("This swimmer does not exist", HttpStatus.NOT_FOUND);
+        swimmer.get().updateSwimmerSpecialization(SwimmingStyle.of(specialization));
+        swimmerService.create(swimmer.get());
+        return new ResponseEntity<>("A swimmer specialization was updated!", HttpStatus.OK);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> deleteSwimmer(@PathVariable Long id) {
+        Optional<Swimmer> swimmer = swimmerService.find(id);
+        if (swimmer.isEmpty()) return new ResponseEntity<>("This swimmer does not exist!", HttpStatus.NOT_FOUND);
+        swimmerService.delete(swimmer.get());
+        return new ResponseEntity<>("This swimmer was successfully deleted!", HttpStatus.OK);
     }
 }
 

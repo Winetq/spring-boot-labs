@@ -46,12 +46,23 @@ public class CoachController {
     public ResponseEntity<String> assignSwimmerToCoach(@PathVariable Long coach_id, @PathVariable Long swimmer_id) {
         Optional<Coach> coach = coachService.find(coach_id);
         Optional<Swimmer> swimmer = swimmerService.find(swimmer_id);
-        if (coach.isEmpty() || swimmer.isEmpty()) return new ResponseEntity<>("This coach or swimmer is not exist!", HttpStatus.NOT_FOUND);
+        if (coach.isEmpty() || swimmer.isEmpty()) return new ResponseEntity<>("This coach or swimmer does not exist!", HttpStatus.NOT_FOUND);
         swimmer.get().assignCoach(coach.get());
         coach.get().addSwimmer(swimmer.get());
-        coachService.create(coach.get());
-        swimmerService.create(swimmer.get());
+        swimmerService.create(swimmer.get()); // save a change in the database
         return new ResponseEntity<>(swimmer.get().getName() + " was assigned to the coach " + coach.get().getName(), HttpStatus.OK);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> deleteCoach(@PathVariable Long id) {
+        Optional<Coach> coach = coachService.find(id);
+        if (coach.isEmpty()) return new ResponseEntity<>("This coach does not exist!", HttpStatus.NOT_FOUND);
+        coach.get().getSwimmers().forEach(x -> {
+            x.assignCoach(null);
+            swimmerService.create(x);
+        });
+        coachService.delete(coach.get());
+        return new ResponseEntity<>("This coach was successfully deleted!", HttpStatus.OK);
     }
 }
 
