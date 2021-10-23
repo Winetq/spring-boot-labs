@@ -18,6 +18,7 @@ public class Swimmer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
+    @EqualsAndHashCode.Exclude
     private Long id;
 
     @Column(name = "swimmer_name")
@@ -27,6 +28,7 @@ public class Swimmer {
     @ManyToOne
     @Getter
     @JsonIgnore
+    @EqualsAndHashCode.Exclude
     private Coach coach;
 
     @Getter

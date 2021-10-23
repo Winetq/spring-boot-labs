@@ -34,7 +34,9 @@ public class SwimmerController {
 
     @PostMapping("{name}/{specialization}")
     public ResponseEntity<String> createSwimmer(@PathVariable String name, @PathVariable String specialization) {
+        List<Swimmer> swimmers = swimmerService.findAll();
         Swimmer swimmer = new Swimmer(name, SwimmingStyle.of(specialization));
+        if (swimmers.contains(swimmer)) return new ResponseEntity<>("This swimmer was already created!", HttpStatus.CREATED);
         swimmerService.create(swimmer);
         return new ResponseEntity<>("A swimmer was added to the database!", HttpStatus.OK);
     }
@@ -43,7 +45,10 @@ public class SwimmerController {
     public ResponseEntity<String> createSwimmerWithCoach(@PathVariable String name, @PathVariable Long coach_id,
                                                          @PathVariable String specialization) {
         Optional<Coach> coach = coachService.find(coach_id);
+        if (coach.isEmpty()) return new ResponseEntity<>("This coach is not exist!", HttpStatus.NOT_FOUND);
+        List<Swimmer> swimmers = swimmerService.findAll();
         Swimmer swimmer = new Swimmer(name, coach.get(), SwimmingStyle.of(specialization));
+        if (swimmers.contains(swimmer)) return new ResponseEntity<>("This swimmer was already created!", HttpStatus.CREATED);
         swimmerService.create(swimmer);
         return new ResponseEntity<>("A swimmer was added to the database!", HttpStatus.OK);
     }

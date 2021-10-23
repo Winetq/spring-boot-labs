@@ -18,6 +18,7 @@ public class Coach {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
+    @EqualsAndHashCode.Exclude
     private Long id;
 
     @Column(name = "coach_name")
@@ -26,6 +27,7 @@ public class Coach {
 
     @OneToMany(mappedBy = "coach", fetch = FetchType.EAGER)
     @Getter
+    @EqualsAndHashCode.Exclude
     private List<Swimmer> swimmers;
 
     @Column(name = "coach_level")
@@ -39,9 +41,7 @@ public class Coach {
     }
 
     public void addSwimmer(Swimmer swimmer) {
-        swimmer.getCoach().getSwimmers().remove(swimmer);
         swimmers.add(swimmer);
-        swimmer.assignCoach(this);
     }
 }
 
