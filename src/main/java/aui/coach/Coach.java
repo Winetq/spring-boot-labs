@@ -4,29 +4,27 @@ import aui.swimmer.Swimmer;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @NoArgsConstructor
 @EqualsAndHashCode
-@ToString
 @Entity
 @Table(name = "coaches")
 public class Coach {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
-    private UUID uuid;
+    private Long id;
 
     @Column(name = "coach_name")
     @Getter
     private String name;
 
-    @OneToMany(mappedBy = "coach")
+    @OneToMany(mappedBy = "coach", fetch = FetchType.EAGER)
     @Getter
     private List<Swimmer> swimmers;
 
@@ -35,15 +33,9 @@ public class Coach {
     private int level;
 
     public Coach(String name, List<Swimmer> swimmers, int level) {
-        this.uuid = UUID.randomUUID();
         this.name = name;
         this.swimmers = swimmers;
         this.level = level;
-        bindSwimmers();
-    }
-
-    private void bindSwimmers() {
-        swimmers.forEach(x -> x.assignCoach(this));
     }
 
     public void addSwimmer(Swimmer swimmer) {

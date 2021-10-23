@@ -1,50 +1,47 @@
 package aui.swimmer;
 
 import aui.coach.Coach;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
-import java.util.UUID;
 
 @Component
 @NoArgsConstructor
 @EqualsAndHashCode
-@ToString
 @Entity
 @Table(name = "swimmers")
 public class Swimmer {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
-    private UUID uuid;
+    private Long id;
 
     @Column(name = "swimmer_name")
     @Getter
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @Getter
-    @ToString.Exclude
+    @JsonIgnore
     private Coach coach;
 
     @Getter
+    @Enumerated(EnumType.STRING)
     private SwimmingStyle specialization;
 
     public Swimmer(String name, SwimmingStyle specialization) {
-        this.uuid = UUID.randomUUID();
         this.name = name;
         this.specialization = specialization;
     }
 
     public Swimmer(String name, Coach coach, SwimmingStyle specialization) {
-        this.uuid = UUID.randomUUID();
         this.name = name;
         this.coach = coach;
         this.specialization = specialization;
-        coach.getSwimmers().add(this);
     }
 
     public void assignCoach(Coach coach) {

@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class CoachService {
@@ -16,7 +15,7 @@ public class CoachService {
         this.repository = repository;
     }
 
-    public Optional<Coach> find(UUID id) {
+    public Optional<Coach> find(Long id) {
         return repository.findById(id);
     }
 
