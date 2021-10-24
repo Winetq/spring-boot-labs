@@ -39,7 +39,7 @@ public class CoachController {
         Coach coach = new Coach(name, new ArrayList<>(), level);
         if (coaches.contains(coach)) return new ResponseEntity<>("This coach was already created!", HttpStatus.CREATED);
         coachService.create(coach);
-        return new ResponseEntity<>("A coach was added to database!", HttpStatus.OK);
+        return new ResponseEntity<>("A coach was added to the database!", HttpStatus.OK);
     }
 
     @PutMapping("{coach_id}/{swimmer_id}")

@@ -1,10 +1,10 @@
-package aui.swimmer;
+package aui;
 
-import aui.SpringBootLabsApplication;
 import aui.coach.Coach;
 import aui.coach.CoachController;
 import aui.coach.CoachRepository;
 import aui.coach.CoachService;
+import aui.swimmer.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.module.mockmvc.response.MockMvcResponse;
