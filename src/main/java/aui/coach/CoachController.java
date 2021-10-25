@@ -1,6 +1,7 @@
 package aui.coach;
 
 import aui.coach.dto.GETCoachDTO;
+import aui.coach.dto.POSTCoachDTO;
 import aui.swimmer.Swimmer;
 import aui.swimmer.SwimmerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,10 +38,10 @@ public class CoachController {
         return new ResponseEntity<>(GETCoachDTO.entityToDTO(coach.get()), HttpStatus.OK);
     }
 
-    @PostMapping("{name}/{level}")
-    public ResponseEntity<String> createCoach(@PathVariable String name, @PathVariable int level) {
+    @PostMapping
+    public ResponseEntity<String> createCoach(@RequestBody POSTCoachDTO coachDTO) {
+        Coach coach = POSTCoachDTO.dtoToEntity(coachDTO);
         List<Coach> coaches = coachService.findAll();
-        Coach coach = new Coach(name, new ArrayList<>(), level);
         if (coaches.contains(coach)) return new ResponseEntity<>("This coach was already created!", HttpStatus.CREATED);
         coachService.create(coach);
         return new ResponseEntity<>("A coach was added to the database!", HttpStatus.OK);
