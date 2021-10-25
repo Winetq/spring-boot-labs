@@ -23,13 +23,17 @@ public class SwimmerController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Swimmer>> getSwimmers() {
-        return new ResponseEntity<>(swimmerService.findAll(), HttpStatus.OK);
+    public ResponseEntity<List<SwimmerDTO>> getSwimmers() {
+        List<Swimmer> swimmers = swimmerService.findAll();
+        List<SwimmerDTO> swimmersDTO = SwimmerDTO.entityToDTO(swimmers);
+        return new ResponseEntity<>(swimmersDTO, HttpStatus.OK);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Optional<Swimmer>> getSwimmer(@PathVariable Long id) {
-        return new ResponseEntity<>(swimmerService.find(id), HttpStatus.OK);
+    public ResponseEntity<SwimmerDTO> getSwimmer(@PathVariable Long id) {
+        Optional<Swimmer> swimmer = swimmerService.find(id);
+        if (swimmer.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(SwimmerDTO.entityToDTO(swimmer.get()), HttpStatus.OK);
     }
 
     @PostMapping("{name}/{specialization}")
