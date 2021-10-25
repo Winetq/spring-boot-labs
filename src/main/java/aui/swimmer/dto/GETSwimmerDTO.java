@@ -1,5 +1,7 @@
-package aui.swimmer;
+package aui.swimmer.dto;
 
+import aui.swimmer.Swimmer;
+import aui.swimmer.SwimmingStyle;
 import lombok.*;
 
 import java.util.List;
@@ -9,12 +11,12 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class SwimmerDTO {
+public class GETSwimmerDTO {
     private String name;
     private SwimmingStyle specialization;
 
-    public static List<SwimmerDTO> entityToDTO(List<Swimmer> swimmers) {
-        return swimmers.stream().map(swimmer -> SwimmerDTO
+    public static List<GETSwimmerDTO> entityToDTO(List<Swimmer> swimmers) {
+        return swimmers.stream().map(swimmer -> GETSwimmerDTO
                 .builder()
                 .name(swimmer.getName())
                 .specialization(swimmer.getSpecialization())
@@ -22,8 +24,8 @@ public class SwimmerDTO {
                 .collect(Collectors.toList());
     }
 
-    public static SwimmerDTO entityToDTO(Swimmer swimmer) {
-        return SwimmerDTO.builder()
+    public static GETSwimmerDTO entityToDTO(Swimmer swimmer) {
+        return GETSwimmerDTO.builder()
                 .name(swimmer.getName())
                 .specialization(swimmer.getSpecialization())
                 .build();
