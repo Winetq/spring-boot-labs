@@ -14,24 +14,21 @@ import java.util.List;
 @EqualsAndHashCode
 @Entity
 @Table(name = "coaches")
+@Getter
 public class Coach {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     @EqualsAndHashCode.Exclude
     private Long id;
 
     @Column(name = "coach_name")
-    @Getter
     private String name;
 
     @OneToMany(mappedBy = "coach", fetch = FetchType.EAGER)
-    @Getter
     @EqualsAndHashCode.Exclude
     private List<Swimmer> swimmers;
 
     @Column(name = "coach_level")
-    @Getter
     private int level;
 
     public Coach(String name, List<Swimmer> swimmers, int level) {

@@ -59,8 +59,9 @@ public class SwimmerController {
         return new ResponseEntity<>("A swimmer was added to the database!", HttpStatus.OK);
     }
 
-    @PutMapping("{id}/{specialization}")
-    public ResponseEntity<String> changeSwimmerSpecialization(@PathVariable Long id, @PathVariable String specialization) {
+    @PutMapping("{id}")
+    public ResponseEntity<String> changeSwimmerSpecialization(@PathVariable Long id,
+                                                              @RequestParam(value = "specialization") String specialization) {
         Optional<Swimmer> swimmer = swimmerService.find(id);
         if (swimmer.isEmpty()) return new ResponseEntity<>("This swimmer does not exist", HttpStatus.NOT_FOUND);
         swimmer.get().updateSwimmerSpecialization(SwimmingStyle.of(specialization));

@@ -1,7 +1,6 @@
 package aui.swimmer;
 
 import aui.coach.Coach;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,24 +13,20 @@ import javax.persistence.*;
 @EqualsAndHashCode
 @Entity
 @Table(name = "swimmers")
+@Getter
 public class Swimmer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     @EqualsAndHashCode.Exclude
     private Long id;
 
     @Column(name = "swimmer_name")
-    @Getter
     private String name;
 
     @ManyToOne
-    @Getter
-    @JsonIgnore
     @EqualsAndHashCode.Exclude
     private Coach coach;
 
-    @Getter
     @Enumerated(EnumType.STRING)
     private SwimmingStyle specialization;
 

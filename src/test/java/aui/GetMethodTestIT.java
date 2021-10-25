@@ -4,7 +4,9 @@ import aui.coach.Coach;
 import aui.coach.CoachController;
 import aui.coach.CoachRepository;
 import aui.coach.CoachService;
+import aui.coach.dto.GETCoachDTO;
 import aui.swimmer.*;
+import aui.swimmer.dto.GETSwimmerDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.module.mockmvc.response.MockMvcResponse;
@@ -71,7 +73,7 @@ public class GetMethodTestIT {
                 .when()
                 .get(uri);
         // then
-        sa.assertEquals(response.getBody().asString(), jacksonMapper.writeValueAsString(swimmers));
+        sa.assertEquals(response.getBody().asString(), jacksonMapper.writeValueAsString(GETSwimmerDTO.entityToDTO(swimmers)));
         sa.assertEquals(response.statusCode(), HttpStatus.OK.value());
         sa.assertAll();
     }
@@ -87,7 +89,7 @@ public class GetMethodTestIT {
                 .when()
                 .get(uri);
         // then
-        sa.assertEquals(response.getBody().asString(), jacksonMapper.writeValueAsString(coaches));
+        sa.assertEquals(response.getBody().asString(), jacksonMapper.writeValueAsString(GETCoachDTO.entityToDTO(coaches)));
         sa.assertEquals(response.statusCode(), HttpStatus.OK.value());
         sa.assertAll();
     }
@@ -103,7 +105,7 @@ public class GetMethodTestIT {
                 .when()
                 .get(uri);
         // then
-        sa.assertEquals(response.getBody().asString(), jacksonMapper.writeValueAsString(swimmer2));
+        sa.assertEquals(response.getBody().asString(), jacksonMapper.writeValueAsString(GETSwimmerDTO.entityToDTO(swimmer2)));
         sa.assertEquals(response.statusCode(), HttpStatus.OK.value());
         sa.assertAll();
     }
@@ -119,7 +121,7 @@ public class GetMethodTestIT {
                 .when()
                 .get(uri);
         // then
-        sa.assertEquals(response.getBody().asString(), jacksonMapper.writeValueAsString(coach2));
+        sa.assertEquals(response.getBody().asString(), jacksonMapper.writeValueAsString(GETCoachDTO.entityToDTO(coach2)));
         sa.assertEquals(response.statusCode(), HttpStatus.OK.value());
         sa.assertAll();
     }

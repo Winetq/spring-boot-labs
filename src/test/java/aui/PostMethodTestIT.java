@@ -3,6 +3,7 @@ package aui;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -29,9 +30,12 @@ public class PostMethodTestIT extends AbstractTestNGSpringContextTests { // e2e 
     }
 
     @Test(dataProvider= "provideUriAndResponse")
-    public void testCreateSwimmerAndCoach(String uri, String response, HttpStatus status) throws Exception {
+    public void testCreateSwimmerAndCoach(String uri, String json, String response, HttpStatus status) throws Exception {
         // given
-        RequestBuilder request = MockMvcRequestBuilders.post(uri);
+        RequestBuilder request = MockMvcRequestBuilders
+                .post(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
         SoftAssert sa = new SoftAssert();
         // when
         MvcResult result = mvc.perform(request).andReturn();
@@ -44,15 +48,24 @@ public class PostMethodTestIT extends AbstractTestNGSpringContextTests { // e2e 
     @DataProvider
     public Object[][] provideUriAndResponse() {
         return new Object[][] {
-                {"/swimmers/Michael/FREESTYLE", "A swimmer was added to the database!", HttpStatus.OK},
-                {"/swimmers/Michael/FREESTYLE", "This swimmer was already created!", HttpStatus.CREATED},
-                {"/swimmers/Jacob/BUTTERFLY", "A swimmer was added to the database!", HttpStatus.OK},
-                {"/coaches/Jacek/5", "A coach was added to the database!", HttpStatus.OK},
-                {"/coaches/Jacek/5", "This coach was already created!", HttpStatus.CREATED},
-                {"/coaches/Rick/10", "A coach was added to the database!", HttpStatus.OK},
-                {"/swimmers/qqq/1/BREASTSTROKE", "A swimmer was added to the database!", HttpStatus.OK},
-                {"/swimmers/qqq/3/BACKSTROKE", "This coach does not exist!", HttpStatus.NOT_FOUND},
-                {"/swimmers/qqq/2/BREASTSTROKE", "This swimmer was already created!", HttpStatus.CREATED}
+                {"/swimmers", "{ \"name\": \"Michael\", \"specialization\": \"BUTTERFLY\" }",
+                        "A swimmer was added to the database!", HttpStatus.OK},
+                {"/swimmers", "{ \"name\": \"Michael\", \"specialization\": \"BUTTERFLY\" }",
+                        "This swimmer was already created!", HttpStatus.CREATED},
+                {"/swimmers", "{ \"name\": \"Jacob\", \"specialization\": \"BUTTERFLY\" }",
+                        "A swimmer was added to the database!", HttpStatus.OK},
+                {"/coaches", "{ \"name\": \"Alfons\", \"level\": 10 }",
+                        "A coach was added to the database!", HttpStatus.OK},
+                {"/coaches", "{ \"name\": \"Alfons\", \"level\": 10 }",
+                        "This coach was already created!", HttpStatus.CREATED},
+                {"/coaches", "{ \"name\": \"Alfonso\", \"level\": 5 }",
+                        "A coach was added to the database!", HttpStatus.OK},
+                {"/swimmers/with_coach", "{ \"name\": \"qqq\", \"coach_id\": 1, \"specialization\": \"BUTTERFLY\" }",
+                        "A swimmer was added to the database!", HttpStatus.OK},
+                {"/swimmers/with_coach", "{ \"name\": \"qqq\", \"coach_id\": 3, \"specialization\": \"BUTTERFLY\" }",
+                        "This coach does not exist!", HttpStatus.NOT_FOUND},
+                {"/swimmers/with_coach", "{ \"name\": \"qqq\", \"coach_id\": 1, \"specialization\": \"BUTTERFLY\" }",
+                        "This swimmer was already created!", HttpStatus.CREATED}
         };
     }
 }
