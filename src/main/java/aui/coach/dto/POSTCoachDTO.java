@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
@@ -16,7 +14,7 @@ public class POSTCoachDTO {
     private int level;
 
     public static Coach dtoToEntity(POSTCoachDTO coach) {
-        return new Coach(coach.getName(), new ArrayList<>(), coach.getLevel());
+        return new Coach(coach.getName(), coach.getLevel());
     }
 }
 

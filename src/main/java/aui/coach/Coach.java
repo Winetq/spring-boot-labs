@@ -1,13 +1,16 @@
 package aui.coach;
 
-import aui.swimmer.Swimmer;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.*;
-import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Component
 @NoArgsConstructor
@@ -24,21 +27,12 @@ public class Coach {
     @Column(name = "coach_name")
     private String name;
 
-    @OneToMany(mappedBy = "coach", fetch = FetchType.EAGER)
-    @EqualsAndHashCode.Exclude
-    private List<Swimmer> swimmers;
-
     @Column(name = "coach_level")
     private int level;
 
-    public Coach(String name, List<Swimmer> swimmers, int level) {
+    public Coach(String name, int level) {
         this.name = name;
-        this.swimmers = swimmers;
         this.level = level;
-    }
-
-    public void addSwimmer(Swimmer swimmer) {
-        swimmers.add(swimmer);
     }
 }
 

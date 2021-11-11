@@ -48,24 +48,12 @@ public class PostMethodTestIT extends AbstractTestNGSpringContextTests { // e2e 
     @DataProvider
     public Object[][] provideUriAndResponse() {
         return new Object[][] {
-                {"/swimmers", "{ \"name\": \"Michael\", \"specialization\": \"BUTTERFLY\" }",
-                        "A swimmer was added to the database!", HttpStatus.OK},
-                {"/swimmers", "{ \"name\": \"Michael\", \"specialization\": \"BUTTERFLY\" }",
-                        "This swimmer was already created!", HttpStatus.CREATED},
-                {"/swimmers", "{ \"name\": \"Jacob\", \"specialization\": \"BUTTERFLY\" }",
-                        "A swimmer was added to the database!", HttpStatus.OK},
                 {"/coaches", "{ \"name\": \"Alfons\", \"level\": 10 }",
                         "A coach was added to the database!", HttpStatus.OK},
                 {"/coaches", "{ \"name\": \"Alfons\", \"level\": 10 }",
-                        "This coach was already created!", HttpStatus.CREATED},
+                        "This coach was already created!", HttpStatus.BAD_REQUEST},
                 {"/coaches", "{ \"name\": \"Alfonso\", \"level\": 5 }",
-                        "A coach was added to the database!", HttpStatus.OK},
-                {"/swimmers/with_coach", "{ \"name\": \"qqq\", \"coach_id\": 1, \"specialization\": \"BUTTERFLY\" }",
-                        "A swimmer was added to the database!", HttpStatus.OK},
-                {"/swimmers/with_coach", "{ \"name\": \"qqq\", \"coach_id\": 3, \"specialization\": \"BUTTERFLY\" }",
-                        "This coach does not exist!", HttpStatus.NOT_FOUND},
-                {"/swimmers/with_coach", "{ \"name\": \"qqq\", \"coach_id\": 1, \"specialization\": \"BUTTERFLY\" }",
-                        "This swimmer was already created!", HttpStatus.CREATED}
+                        "A coach was added to the database!", HttpStatus.OK}
         };
     }
 }
