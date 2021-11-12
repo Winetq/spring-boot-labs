@@ -7,27 +7,27 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CoachService {
+class CoachService {
     private final CoachRepository repository;
 
     @Autowired
-    public CoachService(CoachRepository repository) {
+    CoachService(CoachRepository repository) {
         this.repository = repository;
     }
 
-    public Optional<Coach> find(Long id) {
+    Optional<Coach> find(Long id) {
         return repository.findById(id);
     }
 
-    public List<Coach> findAll() {
+    List<Coach> findAll() {
         return repository.findAll();
     }
 
-    public void create(Coach entity) {
+    void create(Coach entity) {
         repository.save(entity);
     }
 
-    public void delete(Coach entity) {
+    void delete(Coach entity) {
         repository.delete(entity);
     }
 }

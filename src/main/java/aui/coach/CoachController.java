@@ -12,30 +12,30 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("coaches")
-public class CoachController {
+class CoachController {
     private final CoachService coachService;
 
     @Autowired
-    public CoachController(CoachService coachService) {
+    CoachController(CoachService coachService) {
         this.coachService = coachService;
     }
 
     @GetMapping
-    public ResponseEntity<List<GETCoachDTO>> getCoaches() {
+    ResponseEntity<List<GETCoachDTO>> getCoaches() {
         List<Coach> coaches = coachService.findAll();
         List<GETCoachDTO> coachesDTO = GETCoachDTO.entityToDTO(coaches);
         return new ResponseEntity<>(coachesDTO, HttpStatus.OK);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<GETCoachDTO> getCoach(@PathVariable Long id) {
+    ResponseEntity<GETCoachDTO> getCoach(@PathVariable Long id) {
         Optional<Coach> coach = coachService.find(id);
         if (coach.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(GETCoachDTO.entityToDTO(coach.get()), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<String> createCoach(@RequestBody POSTCoachDTO coachDTO) {
+    ResponseEntity<String> createCoach(@RequestBody POSTCoachDTO coachDTO) {
         Coach coach = POSTCoachDTO.dtoToEntity(coachDTO);
         List<Coach> coaches = coachService.findAll();
         if (coaches.contains(coach)) return new ResponseEntity<>("This coach was already created!", HttpStatus.BAD_REQUEST);
@@ -44,7 +44,7 @@ public class CoachController {
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<String> deleteCoach(@PathVariable Long id) {
+    ResponseEntity<String> deleteCoach(@PathVariable Long id) {
         Optional<Coach> coach = coachService.find(id);
         if (coach.isEmpty()) return new ResponseEntity<>("This coach does not exist!", HttpStatus.NOT_FOUND);
         coachService.delete(coach.get());
