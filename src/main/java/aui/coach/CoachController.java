@@ -10,23 +10,23 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("coaches")
-public class CoachController {
+class CoachController {
     private final CoachService coachService;
 
     @Autowired
-    public CoachController(CoachService coachService) {
+    CoachController(CoachService coachService) {
         this.coachService = coachService;
     }
 
     @PostMapping
-    public ResponseEntity<Void> createCoach(@RequestBody CreateCoachRequest request) {
+    ResponseEntity<Void> createCoach(@RequestBody CreateCoachRequest request) {
         Coach coach = CreateCoachRequest.dtoToEntity(request);
         coachService.create(coach);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<Void> deleteCoach(@PathVariable Long id) {
+    ResponseEntity<Void> deleteCoach(@PathVariable Long id) {
         Optional<Coach> coach = coachService.find(id);
         if (coach.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

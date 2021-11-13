@@ -15,7 +15,7 @@ public class CoachService {
         this.repository = repository;
     }
 
-    public Optional<Coach> find(Long id) {
+    Optional<Coach> find(Long id) {
         return repository.findById(id);
     }
 

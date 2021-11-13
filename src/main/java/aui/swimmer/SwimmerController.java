@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("swimmers")
-public class SwimmerController {
+class SwimmerController {
     private final SwimmerService swimmerService;
 
     @Autowired
@@ -21,21 +21,21 @@ public class SwimmerController {
     }
 
     @GetMapping
-    public ResponseEntity<List<GETSwimmerDTO>> getSwimmers() {
+    ResponseEntity<List<GETSwimmerDTO>> getSwimmers() {
         List<Swimmer> swimmers = swimmerService.findAll();
         List<GETSwimmerDTO> swimmersDTO = GETSwimmerDTO.entityToDTO(swimmers);
         return new ResponseEntity<>(swimmersDTO, HttpStatus.OK);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<GETSwimmerDTO> getSwimmer(@PathVariable Long id) {
+    ResponseEntity<GETSwimmerDTO> getSwimmer(@PathVariable Long id) {
         Optional<Swimmer> swimmer = swimmerService.find(id);
         if (swimmer.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(GETSwimmerDTO.entityToDTO(swimmer.get()), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<String> createSwimmer(@RequestBody POSTSwimmerDTO swimmerDTO) {
+    ResponseEntity<String> createSwimmer(@RequestBody POSTSwimmerDTO swimmerDTO) {
         Swimmer swimmer = POSTSwimmerDTO.dtoTOEntity(swimmerDTO);
         List<Swimmer> swimmers = swimmerService.findAll();
         if (swimmers.contains(swimmer)) return new ResponseEntity<>("This swimmer was already created!", HttpStatus.BAD_REQUEST);
@@ -55,7 +55,7 @@ public class SwimmerController {
 //    }
 
     @PutMapping("{id}")
-    public ResponseEntity<String> changeSwimmerSpecialization(@PathVariable Long id,
+    ResponseEntity<String> changeSwimmerSpecialization(@PathVariable Long id,
                                                               @RequestParam(value = "specialization") String specialization) {
         Optional<Swimmer> swimmer = swimmerService.find(id);
         if (swimmer.isEmpty()) return new ResponseEntity<>("This swimmer does not exist", HttpStatus.NOT_FOUND);
@@ -65,7 +65,7 @@ public class SwimmerController {
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<String> deleteSwimmer(@PathVariable Long id) {
+    ResponseEntity<String> deleteSwimmer(@PathVariable Long id) {
         Optional<Swimmer> swimmer = swimmerService.find(id);
         if (swimmer.isEmpty()) return new ResponseEntity<>("This swimmer does not exist!", HttpStatus.NOT_FOUND);
         swimmerService.delete(swimmer.get());
