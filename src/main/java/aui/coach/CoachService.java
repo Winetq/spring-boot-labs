@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-class CoachService {
+public class CoachService {
     private final CoachRepository coachRepository;
     private final CoachEventRepository eventRepository;
 
     @Autowired
-    CoachService(CoachRepository coachRepository, CoachEventRepository eventRepository) {
+    public CoachService(CoachRepository coachRepository, CoachEventRepository eventRepository) {
         this.coachRepository = coachRepository;
         this.eventRepository = eventRepository;
     }
@@ -28,13 +28,13 @@ class CoachService {
     }
 
     @Transactional
-    void create(Coach entity) {
+    public void create(Coach entity) {
+        coachRepository.save(entity); // it has to be first in order to set the ID
         eventRepository.create(entity);
-        coachRepository.save(entity);
     }
 
     @Transactional
-    void delete(Coach entity) {
+    public void delete(Coach entity) {
         eventRepository.delete(entity);
         coachRepository.delete(entity);
     }
