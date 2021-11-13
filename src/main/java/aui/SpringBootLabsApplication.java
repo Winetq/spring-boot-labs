@@ -19,7 +19,7 @@ public class SpringBootLabsApplication {
 	@Bean
 	public Docket endPointsAPI() {
 		return new Docket(DocumentationType.SWAGGER_2).select()
-				.apis(RequestHandlerSelectors.basePackage("aui")).build();
+				.apis(RequestHandlerSelectors.basePackage("swimmer")).build();
 	}
 
 }
