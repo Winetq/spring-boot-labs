@@ -2,14 +2,17 @@ package aui;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 @SpringBootApplication
-@EnableSwagger2
 public class SpringBootLabsApplication {
 
 	public static void main(String[] args) {
@@ -17,9 +20,35 @@ public class SpringBootLabsApplication {
 	}
 
 	@Bean
-	public Docket endPointsAPI() {
-		return new Docket(DocumentationType.SWAGGER_2).select()
-				.apis(RequestHandlerSelectors.basePackage("aui.coach")).build();
+	public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
+		return builder
+				.routes()
+				.route("coaches", r -> r
+						.host("localhost:8080")
+						.and()
+						.path("/coaches/**", "/coaches")
+						.uri("http://localhost:8081"))
+				.route("swimmers", r -> r
+						.host("localhost:8080")
+						.and()
+						.path("/swimmers/**", "/swimmers")
+						.uri("http://localhost:8082"))
+				.build();
 	}
 
+	@Bean
+	public CorsWebFilter corsWebFilter() {
+
+		final CorsConfiguration corsConfig = new CorsConfiguration();
+		corsConfig.setAllowedOrigins(Collections.singletonList("*"));
+		corsConfig.setMaxAge(3600L);
+		corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PUT"));
+		corsConfig.addAllowedHeader("*");
+
+		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", corsConfig);
+
+		return new CorsWebFilter(source);
+	}
 }
+
