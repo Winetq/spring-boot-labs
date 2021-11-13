@@ -39,6 +39,13 @@ class SwimmerController {
         return new ResponseEntity<>(GETSwimmerDTO.entityToDTO(swimmer.get()), HttpStatus.OK);
     }
 
+    @GetMapping("{id}/coach")
+    ResponseEntity<String> getSwimmerCoach(@PathVariable Long id) {
+        Optional<Swimmer> swimmer = swimmerService.find(id);
+        if (swimmer.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return swimmerService.getSwimmerCoach(swimmer.get());
+    }
+
     @PostMapping
     ResponseEntity<String> createSwimmer(@RequestBody POSTSwimmerDTO swimmerDTO) {
         Swimmer swimmer = POSTSwimmerDTO.dtoTOEntity(swimmerDTO);
