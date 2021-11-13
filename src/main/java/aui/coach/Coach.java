@@ -1,6 +1,7 @@
 package aui.coach;
 
 import aui.swimmer.Swimmer;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Component
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode
 @Entity
 @Table(name = "coaches")
@@ -21,24 +23,8 @@ public class Coach {
     @EqualsAndHashCode.Exclude
     private Long id;
 
-    @Column(name = "coach_name")
-    private String name;
-
-    @OneToMany(mappedBy = "coach", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "coach", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @EqualsAndHashCode.Exclude
     private List<Swimmer> swimmers;
-
-    @Column(name = "coach_level")
-    private int level;
-
-    public Coach(String name, List<Swimmer> swimmers, int level) {
-        this.name = name;
-        this.swimmers = swimmers;
-        this.level = level;
-    }
-
-    public void addSwimmer(Swimmer swimmer) {
-        swimmers.add(swimmer);
-    }
 }
 
