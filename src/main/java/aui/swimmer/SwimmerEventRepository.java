@@ -3,6 +3,7 @@ package aui.swimmer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
@@ -17,7 +18,11 @@ public class SwimmerEventRepository {
     }
 
     public ResponseEntity<String> getSwimmerCoach(Swimmer swimmer) {
-        return restTemplate.getForEntity("/coaches/" + swimmer.getCoach().getId(), String.class);
+        if (swimmer.getCoach() == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else {
+            return restTemplate.getForEntity("/coaches/" + swimmer.getCoach().getId(), String.class);
+        }
     }
 }
 
