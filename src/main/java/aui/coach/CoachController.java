@@ -29,7 +29,7 @@ class CoachController {
     ResponseEntity<List<GETSwimmerDTO>> getCoachSwimmers(@PathVariable Long id) {
         Optional<Coach> coach = coachService.find(id);
         List<Swimmer> swimmers = swimmerService.findAll().stream()
-                .filter(swimmer -> swimmer.getCoach().getId().equals(coach.get().getId()))
+                .filter(swimmer -> swimmer.getCoach()!= null && swimmer.getCoach().getId().equals(coach.get().getId()))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(GETSwimmerDTO.entityToDTO(swimmers), HttpStatus.OK);
     }
