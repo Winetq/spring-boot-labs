@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-class SwimmerService {
+public class SwimmerService {
     private final SwimmerRepository swimmerRepository;
     private final SwimmerEventRepository swimmerEventRepository;
 
     @Autowired
-    SwimmerService(SwimmerRepository swimmerRepository, SwimmerEventRepository swimmerEventRepository) {
+    public SwimmerService(SwimmerRepository swimmerRepository, SwimmerEventRepository swimmerEventRepository) {
         this.swimmerRepository = swimmerRepository;
         this.swimmerEventRepository = swimmerEventRepository;
     }
@@ -22,7 +22,7 @@ class SwimmerService {
         return swimmerRepository.findById(id);
     }
 
-    List<Swimmer> findAll() {
+    public List<Swimmer> findAll() {
         return swimmerRepository.findAll();
     }
 
