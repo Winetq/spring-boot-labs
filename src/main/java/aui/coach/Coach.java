@@ -34,5 +34,9 @@ public class Coach {
         this.name = name;
         this.level = level;
     }
+
+    public void updateCoachLevel(int level) {
+        this.level = level;
+    }
 }
 

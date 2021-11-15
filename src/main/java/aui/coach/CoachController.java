@@ -43,6 +43,16 @@ class CoachController {
         return new ResponseEntity<>("A coach was added to the database!", HttpStatus.OK);
     }
 
+    @PutMapping("{id}")
+    ResponseEntity<String> changeCoachLevel(@PathVariable Long id,
+                                                       @RequestParam(value = "level") int level) {
+        Optional<Coach> coach = coachService.find(id);
+        if (coach.isEmpty()) return new ResponseEntity<>("This coach does not exist", HttpStatus.NOT_FOUND);
+        coach.get().updateCoachLevel(level);
+        coachService.create(coach.get());
+        return new ResponseEntity<>("A coach level was updated!", HttpStatus.OK);
+    }
+
     @DeleteMapping("{id}")
     ResponseEntity<String> deleteCoach(@PathVariable Long id) {
         Optional<Coach> coach = coachService.find(id);
