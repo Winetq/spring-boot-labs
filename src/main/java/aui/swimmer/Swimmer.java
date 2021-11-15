@@ -41,10 +41,6 @@ public class Swimmer {
         this.specialization = specialization;
     }
 
-    public void assignCoach(Coach coach) {
-        this.coach = coach;
-    }
-
     public void updateSwimmerSpecialization(SwimmingStyle specialization) {
         this.specialization = specialization;
     }
