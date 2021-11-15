@@ -4,6 +4,7 @@ import aui.coach.Coach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,6 +23,10 @@ public class CoachEventRepository {
 
     public void delete(Coach coach) {
         restTemplate.delete("/coaches/{id}", coach.getId()); // event request
+    }
+
+    public ResponseEntity<String> getCoachSwimmers(Long id) {
+        return restTemplate.getForEntity("/coaches/" + id + "/swimmers", String.class);
     }
 }
 

@@ -34,6 +34,11 @@ class CoachController {
         return new ResponseEntity<>(GETCoachDTO.entityToDTO(coach.get()), HttpStatus.OK);
     }
 
+    @GetMapping("{id}/swimmers")
+    ResponseEntity<String> getCoachSwimmers(@PathVariable Long id) {
+        return coachService.getCoachSwimmers(id);
+    }
+
     @PostMapping
     ResponseEntity<String> createCoach(@RequestBody POSTCoachDTO coachDTO) {
         Coach coach = POSTCoachDTO.dtoToEntity(coachDTO);

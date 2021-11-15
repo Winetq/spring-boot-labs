@@ -2,6 +2,8 @@ package aui.coach;
 
 import aui.coach.event.CoachEventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +39,14 @@ public class CoachService {
     public void delete(Coach entity) {
         eventRepository.delete(entity);
         coachRepository.delete(entity);
+    }
+
+    ResponseEntity<String> getCoachSwimmers(Long id) {
+        Optional<Coach> coach = coachRepository.findById(id);
+        if (coach.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return eventRepository.getCoachSwimmers(id);
     }
 }
 
