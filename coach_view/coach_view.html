@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="author" content="Michał Cwynar"/>
+        <title>Simple App</title>
+        <link rel="stylesheet" href="../styles.css"/>
+        <link rel="stylesheet" href="coach_view.css"/>
+        <script type="module" src="coach_view.js" defer="defer"></script>
+    </head>
+    <body>
+        <div class="container">
+            <header class="header">
+                <h1>Simple App</h1>
+            </header>
+
+            <nav class="navigation-bar">
+                <ul>
+                    <li><a href="../index.html">main</a></li>
+                    <li><a href="../coach_list/coach_list.html">coaches</a></li>
+                </ul>
+            </nav>
+
+            <section class="main-section">
+                <article class="text--justified">
+                    <header><h2><a id="create_swimmer_link" href="../swimmer_create/swimmer_create.html"></a></h2></header>
+                    <section>
+                        <div class="details-grid">
+                            <label for="name">Name:</label><span id="name">name</span>
+                            <label for="level">Level:</label><span id="level">level</span>
+                        </div>
+                    </section>
+                    <section>
+                        <h3>Swimmers</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>name</th>
+                                    <th>specialization</th>
+                                    <th>edit</th>
+                                    <th>delete</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <tr>
+                                    <td>name</td>
+                                    <td>specialization</td>
+                                    <td><a href="#">edit</a></td>
+                                    <td>
+                                        <button class="ui-button ui-control">delete</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </article>
+            </section>
+
+            <footer class="footer">
+                <p>Copyright &copy; 2021, Michał Cwynar</p>
+            </footer>
+        </div>
+    </body>
+</html>
