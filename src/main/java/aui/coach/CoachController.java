@@ -21,10 +21,9 @@ class CoachController {
     }
 
     @GetMapping
-    ResponseEntity<List<GETCoachDTO>> getCoaches() {
+    ResponseEntity<List<Coach>> getCoaches() {
         List<Coach> coaches = coachService.findAll();
-        List<GETCoachDTO> coachesDTO = GETCoachDTO.entityToDTO(coaches);
-        return new ResponseEntity<>(coachesDTO, HttpStatus.OK);
+        return new ResponseEntity<>(coaches, HttpStatus.OK);
     }
 
     @GetMapping("{id}")
