@@ -1,6 +1,7 @@
 package aui.swimmer;
 
 import aui.coach.Coach;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ public class Swimmer {
 
     @ManyToOne
     @EqualsAndHashCode.Exclude
+    @JsonIgnore
     private Coach coach;
 
     @Enumerated(EnumType.STRING)

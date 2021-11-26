@@ -3,7 +3,6 @@ package aui.coach;
 import aui.coach.dto.CreateCoachRequest;
 import aui.swimmer.Swimmer;
 import aui.swimmer.SwimmerService;
-import aui.swimmer.dto.GETSwimmerDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +25,12 @@ class CoachController {
     }
 
     @GetMapping("{id}/swimmers")
-    ResponseEntity<List<GETSwimmerDTO>> getCoachSwimmers(@PathVariable Long id) {
+    ResponseEntity<List<Swimmer>> getCoachSwimmers(@PathVariable Long id) {
         Optional<Coach> coach = coachService.find(id);
         List<Swimmer> swimmers = swimmerService.findAll().stream()
-                .filter(swimmer -> swimmer.getCoach()!= null && swimmer.getCoach().getId().equals(coach.get().getId()))
+                .filter(swimmer -> swimmer.getCoach() != null && swimmer.getCoach().getId().equals(coach.get().getId()))
                 .collect(Collectors.toList());
-        return new ResponseEntity<>(GETSwimmerDTO.entityToDTO(swimmers), HttpStatus.OK);
+        return new ResponseEntity<>(swimmers, HttpStatus.OK);
     }
 
     @PostMapping
