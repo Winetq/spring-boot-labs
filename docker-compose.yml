@@ -40,5 +40,20 @@ services:
     networks:
       - net
 
+  frontend:
+    build:
+      context: ./lab4_js/spring-boot-labs/
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    depends_on:
+      - coaches
+      - swimmers
+      - gateway
+    ports:
+      - "8083:80"
+    networks:
+      - net
+
 networks:
   net:
