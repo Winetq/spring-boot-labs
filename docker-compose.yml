@@ -1,0 +1,30 @@
+version: "3.3"
+
+services:
+
+  coaches:
+    build:
+      context: ./spring-boot-labs/
+      dockerfile: Dockerfile
+    container_name: coaches
+    restart: always
+    ports:
+      - "8081:8081"
+    networks:
+      - net
+
+  swimmers:
+    build:
+      context: ./lab3_swimmer/spring-boot-labs/
+      dockerfile: Dockerfile
+    container_name: swimmers
+    restart: always
+    depends_on:
+      - coaches
+    ports:
+      - "8082:8082"
+    networks:
+      - net
+
+networks:
+  net:
