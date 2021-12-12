@@ -27,12 +27,12 @@ public class SpringBootLabsApplication {
 						.host("localhost:8080")
 						.and()
 						.path("/coaches/**", "/coaches")
-						.uri("http://localhost:8081"))
+						.uri("http://coaches:8081"))
 				.route("swimmers", r -> r
 						.host("localhost:8080")
 						.and()
 						.path("/swimmers/**", "/swimmers")
-						.uri("http://localhost:8082"))
+						.uri("http://swimmers:8082"))
 				.build();
 	}
 
