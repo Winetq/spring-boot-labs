@@ -26,5 +26,19 @@ services:
     networks:
       - net
 
+  gateway:
+    build:
+      context: ./lab3_gateway/spring-boot-labs/
+      dockerfile: Dockerfile
+    container_name: gateway
+    restart: always
+    depends_on:
+      - coaches
+      - swimmers
+    ports:
+      - "8080:8080"
+    networks:
+      - net
+
 networks:
   net:
