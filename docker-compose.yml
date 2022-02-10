@@ -36,8 +36,22 @@ services:
     restart: always
     depends_on:
       - coaches
+      - postgres-swimmers-db
     ports:
       - "8082:8082"
+    networks:
+      - net
+
+  postgres-swimmers-db:
+    container_name: postgres-swimmers-db
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: swimmers_db
     networks:
       - net
 
