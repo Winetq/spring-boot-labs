@@ -3,9 +3,7 @@ version: "3.3"
 services:
 
   coaches:
-    build:
-      context: ./spring-boot-labs/
-      dockerfile: Dockerfile
+    image: mcwynar/spring-boot-labs:lab3_coach
     container_name: coaches
     restart: always
     depends_on:
@@ -29,9 +27,7 @@ services:
       - net
 
   swimmers:
-    build:
-      context: ./lab3_swimmer/spring-boot-labs/
-      dockerfile: Dockerfile
+    image: mcwynar/spring-boot-labs:lab3_swimmer
     container_name: swimmers
     restart: always
     depends_on:
@@ -56,9 +52,7 @@ services:
       - net
 
   gateway:
-    build:
-      context: ./lab3_gateway/spring-boot-labs/
-      dockerfile: Dockerfile
+    image: mcwynar/spring-boot-labs:lab3_gateway
     container_name: gateway
     restart: always
     depends_on:
@@ -70,9 +64,7 @@ services:
       - net
 
   frontend:
-    build:
-      context: ./lab4_js/spring-boot-labs/
-      dockerfile: Dockerfile
+    image: mcwynar/spring-boot-labs:lab4_js
     container_name: frontend
     restart: always
     depends_on:
