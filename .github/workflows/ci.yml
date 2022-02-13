@@ -44,7 +44,7 @@ jobs:
       uses: mr-smithers-excellent/docker-build-push@v4
       with:
         image: mcwynar/spring-boot-labs
-        tags: ${{ steps.extract_branch.outputs.branch }}
+        tag: ${{ steps.extract_branch.outputs.branch }}
         registry: docker.io
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
