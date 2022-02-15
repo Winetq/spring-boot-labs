@@ -1,7 +1,7 @@
-FROM alpine:3.6 AS clone
+FROM ubuntu:18.04 AS clone
 
-RUN apk update &\
-    apk add git
+RUN apt update
+RUN apt install -y git
 
 RUN git clone -b lab3_swimmer https://github.com/Winetq/spring-boot-labs.git
 
