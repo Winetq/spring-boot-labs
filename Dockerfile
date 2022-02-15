@@ -1,4 +1,4 @@
-FROM alpine AS clone
+FROM alpine:3.6 AS clone
 
 RUN apk update &\
     apk add git
