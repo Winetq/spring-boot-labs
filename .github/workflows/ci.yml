@@ -1,0 +1,50 @@
+name: Java CI with Maven and Docker CD
+
+on:
+  push:
+    branches:
+      - lab3_coach
+      - lab3_swimmer
+      - lab3_gateway
+      - lab4_js
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    if: github.ref == 'refs/heads/lab3_coach' || github.ref == 'refs/heads/lab3_swimmer'
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up JDK 16
+      uses: actions/setup-java@v2
+      with:
+        java-version: '16'
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Build with Maven
+      run: mvn -B verify --file pom.xml
+
+  cd:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Extract a branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
+
+    - name: Build and Push Docker Image
+      uses: mr-smithers-excellent/docker-build-push@v4
+      with:
+        image: mcwynar/spring-boot-labs
+        tag: ${{ steps.extract_branch.outputs.branch }}
+        registry: docker.io
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
