@@ -1,0 +1,68 @@
+package aui.coach;
+
+import aui.coach.dto.GETCoachDTO;
+import aui.coach.dto.POSTCoachDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("coaches")
+class CoachController {
+    private final CoachService coachService;
+
+    @Autowired
+    CoachController(CoachService coachService) {
+        this.coachService = coachService;
+    }
+
+    @GetMapping
+    ResponseEntity<List<Coach>> getCoaches() {
+        List<Coach> coaches = coachService.findAll();
+        return new ResponseEntity<>(coaches, HttpStatus.OK);
+    }
+
+    @GetMapping("{id}")
+    ResponseEntity<GETCoachDTO> getCoach(@PathVariable Long id) {
+        Optional<Coach> coach = coachService.find(id);
+        if (coach.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(GETCoachDTO.entityToDTO(coach.get()), HttpStatus.OK);
+    }
+
+    @GetMapping("{id}/swimmers")
+    ResponseEntity<String> getCoachSwimmers(@PathVariable Long id) {
+        return coachService.getCoachSwimmers(id);
+    }
+
+    @PostMapping
+    ResponseEntity<String> createCoach(@RequestBody POSTCoachDTO coachDTO) {
+        Coach coach = POSTCoachDTO.dtoToEntity(coachDTO);
+        List<Coach> coaches = coachService.findAll();
+        if (coaches.contains(coach)) return new ResponseEntity<>("This coach was already created!", HttpStatus.BAD_REQUEST);
+        coachService.create(coach);
+        return new ResponseEntity<>("A coach was added to the database!", HttpStatus.OK);
+    }
+
+    @PutMapping("{id}")
+    ResponseEntity<String> changeCoachLevel(@PathVariable Long id,
+                                                       @RequestParam(value = "level") int level) {
+        Optional<Coach> coach = coachService.find(id);
+        if (coach.isEmpty()) return new ResponseEntity<>("This coach does not exist", HttpStatus.NOT_FOUND);
+        coach.get().updateCoachLevel(level);
+        coachService.create(coach.get());
+        return new ResponseEntity<>("A coach level was updated!", HttpStatus.OK);
+    }
+
+    @DeleteMapping("{id}")
+    ResponseEntity<String> deleteCoach(@PathVariable Long id) {
+        Optional<Coach> coach = coachService.find(id);
+        if (coach.isEmpty()) return new ResponseEntity<>("This coach does not exist!", HttpStatus.NOT_FOUND);
+        coachService.delete(coach.get());
+        return new ResponseEntity<>("This coach was successfully deleted!", HttpStatus.OK);
+    }
+}
+
