@@ -1,0 +1,80 @@
+version: "3.3"
+
+services:
+
+  coaches:
+    image: mcwynar/spring-boot-labs:lab3_coach
+    container_name: coaches
+    restart: always
+    depends_on:
+      - postgres-coaches-db
+    ports:
+      - "8081:8081"
+    networks:
+      - net
+
+  postgres-coaches-db:
+    container_name: postgres-coaches-db
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: coaches_db
+    networks:
+      - net
+
+  swimmers:
+    image: mcwynar/spring-boot-labs:lab3_swimmer
+    container_name: swimmers
+    restart: always
+    depends_on:
+      - coaches
+      - postgres-swimmers-db
+    ports:
+      - "8082:8082"
+    networks:
+      - net
+
+  postgres-swimmers-db:
+    container_name: postgres-swimmers-db
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: swimmers_db
+    networks:
+      - net
+
+  gateway:
+    image: mcwynar/spring-boot-labs:lab3_gateway
+    container_name: gateway
+    restart: always
+    depends_on:
+      - coaches
+      - swimmers
+    ports:
+      - "8080:8080"
+    networks:
+      - net
+
+  frontend:
+    image: mcwynar/spring-boot-labs:lab4_js
+    container_name: frontend
+    restart: always
+    depends_on:
+      - coaches
+      - swimmers
+      - gateway
+    ports:
+      - "8083:80"
+    networks:
+      - net
+
+networks:
+  net:
