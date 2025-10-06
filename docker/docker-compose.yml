@@ -70,7 +70,9 @@ services:
       - net
 
   frontend:
-    image: mcwynar/spring-boot-labs:lab4_js
+    build:
+      context: ../client
+      dockerfile: Dockerfile
     container_name: frontend
     restart: always
     depends_on:
