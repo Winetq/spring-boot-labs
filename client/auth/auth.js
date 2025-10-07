@@ -39,7 +39,6 @@ async function showUserInfo() {
         <pre style="word-break: break-all; white-space: pre-wrap;">ID Token: \n${idToken}</pre>
     `;
     document.getElementById('logoutBtn').onclick = logout;
-
     showAuthenticatedNavigation();
 }
 
