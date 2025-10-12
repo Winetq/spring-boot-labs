@@ -3,11 +3,10 @@ import {
     clearElementChildren,
     createLinkCell,
     createButtonCell,
-    createTextCell,
-    setTextNode
+    createTextCell
 } from '../js/dom_utils.js';
 import {getBackendUrl} from '../js/configuration.js';
-import {requireAuth, authenticatedGet, authenticatedDelete} from '../auth/http_requests.js';
+import {requireAuth, authenticatedGet, authenticatedDelete, fetchCoach} from '../auth/http_requests.js';
 
 window.addEventListener('load', async () => {
     if (await requireAuth()) {
@@ -83,31 +82,4 @@ async function deleteSwimmer(swimmer) {
     } catch (error) {
         console.error('Error deleting swimmer:', error);
     }
-}
-
-/**
- * Fetches single coach and modifies the DOM tree in order to display it.
- */
-async function fetchCoach() {
-    try {
-        const response = await authenticatedGet(getBackendUrl() + '/coaches/' + getParameterById('coach'));
-        if (response?.ok) {
-            const coach = await response.json();
-            displayCoach(coach);
-        } else {
-            console.warn('Fetch coach failed:', response?.status, response?.statusText);
-        }
-    } catch (error) {
-        console.error('Error fetching coach:', error);
-    }
-}
-
-/**
- * Updates the DOM tree in order to display coach.
- *
- * @param {string} coach
- */
-function displayCoach(coach) {
-    setTextNode('name', coach.name);
-    setTextNode('level', coach.level);
 }

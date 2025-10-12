@@ -1,3 +1,6 @@
+import {getParameterById} from '../js/dom_utils.js';
+import {getBackendUrl} from '../js/configuration.js';
+
 const oktaAuth = new OktaAuth({
     issuer: 'https://integrator-7447834.okta.com/oauth2/default',
     clientId: '0oaw3nzfn0RvOt7cc697',
@@ -8,7 +11,8 @@ const oktaAuth = new OktaAuth({
     tokenManager: { storage: 'localStorage' }
 });
 
-export function redirectToLogin() {
+
+function redirectToLogin() {
     window.location.href = '/index.html';
 }
 
@@ -20,7 +24,8 @@ export async function requireAuth() {
     return true;
 }
 
-export async function makeAuthenticatedRequest(url, options = {}) {
+
+async function makeAuthenticatedRequest(url, options = {}) {
     const accessToken = oktaAuth.getAccessToken();
     if (!accessToken) return null;
 
@@ -69,4 +74,36 @@ export async function authenticatedPut(url, data) {
 
 export async function authenticatedDelete(url) {
     return makeAuthenticatedRequest(url, { method: 'DELETE' });
+}
+
+
+/**
+ * Fetches single coach and modifies the DOM tree in order to display it.
+ */
+export async function fetchCoach() {
+    try {
+        const response = await authenticatedGet(getBackendUrl() + '/coaches/' + getParameterById('coach'));
+        if (response?.ok) {
+            const coach = await response.json();
+            displayCoach(coach);
+        } else {
+            console.warn('Fetch coach failed:', response?.status, response?.statusText);
+        }
+    } catch (error) {
+        console.error('Error fetching coach:', error);
+    }
+}
+
+/**
+ * Updates the DOM tree in order to display coach.
+ *
+ * @param {string} coach
+ */
+function displayCoach(coach) {
+    for (const [key, value] of Object.entries(coach)) {
+        let input = document.getElementById(key);
+        if (input) {
+            input.value = value;
+        }
+    }
 }
