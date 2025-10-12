@@ -107,3 +107,29 @@ function displayCoach(coach) {
         }
     }
 }
+
+
+/**
+ * Action event handled for creating coach.
+ *
+ * @param {Event} event dom event
+ * @param {string} url link url
+ * @param {object} request body of the request
+ * @param {string} redirectUrl link to redirect when entity is created
+ */
+export async function createEntity(event, url, request, redirectUrl) {
+    event.preventDefault();
+
+    try {
+        const response = await authenticatedPost(url, request);
+        if (response?.ok) {
+            const successfulMessage = await response.text();
+            alert(successfulMessage);
+            window.location.href = redirectUrl;
+        } else {
+            console.warn('Create entity failed:', response?.status, response?.statusText);
+        }
+    } catch (error) {
+        console.error('Error creating entity:', error);
+    }
+}

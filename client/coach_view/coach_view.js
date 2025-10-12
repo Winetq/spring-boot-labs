@@ -66,6 +66,7 @@ function createTableRow(swimmer) {
     return tr;
 }
 
+// TODO: allow to delete coach only if user has an appropriate role
 /**
  * Deletes entity from backend and reloads table.
  *

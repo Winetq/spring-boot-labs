@@ -1,40 +1,28 @@
 import {getParameterById} from '../js/dom_utils.js';
 import {getBackendUrl} from '../js/configuration.js';
-import {requireAuth, authenticatedPost} from '../auth/http_requests.js';
+import {requireAuth, createEntity} from '../auth/http_requests.js';
 
 window.addEventListener('load', async () => {
     if (await requireAuth()) {
         const createSwimmerForm = document.getElementById('createSwimmerForm');
-        createSwimmerForm.addEventListener('submit', event => createSwimmer(event));
+        createSwimmerForm.addEventListener('submit',
+                event =>
+                    createEntity(
+                        event,
+                        getBackendUrl() + '/swimmers/with_coach',
+                        buildSwimmerRequest(),
+                        '/coach_view/coach_view.html?coach=' + getParameterById('coach')
+                    )
+        );
     }
 });
 
 function buildSwimmerRequest() {
+    const nameValue = document.getElementById('name')?.value.trim() || '';
+    const specializationValue = document.getElementById('specialization')?.value.trim() || '';
     return {
         coach_id: getParameterById('coach'),
-        name: document.getElementById('name').value,
-        specialization: document.getElementById('specialization').value
+        name: nameValue === '' ? 'testName' : nameValue,
+        specialization: specializationValue === '' ? 'FREESTYLE' : specializationValue
     };
-}
-
-/**
- * Action event handled for creating swimmer.
- *
- * @param {Event} event dom event
- */
-async function createSwimmer(event) {
-    event.preventDefault();
-
-    try {
-        const request = buildSwimmerRequest();
-        const response = await authenticatedPost(getBackendUrl() + '/swimmers/with_coach', request);
-        if (response?.ok) {
-            const successfulMessage = await response.text();
-            alert(successfulMessage);
-        } else {
-            console.warn('Create swimmer failed:', response?.status, response?.statusText);
-        }
-    } catch (error) {
-        console.error('Error creating swimmer:', error);
-    }
 }

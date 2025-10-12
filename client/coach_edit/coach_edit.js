@@ -19,8 +19,8 @@ async function updateCoach(event) {
     event.preventDefault();
 
     try {
-        const response = await authenticatedPut(getBackendUrl() + '/coaches/' + getParameterById('coach') +
-            '?level=' + document.getElementById('level').value);
+        let url = getBackendUrl() + '/coaches/' + getParameterById('coach') + '?level=' + document.getElementById('level').value;
+        const response = await authenticatedPut(url);
         if (response?.ok) {
             const successfulMessage = await response.text();
             alert(successfulMessage)
