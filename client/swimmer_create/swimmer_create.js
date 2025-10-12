@@ -1,31 +1,40 @@
 import {getParameterById} from '../js/dom_utils.js';
 import {getBackendUrl} from '../js/configuration.js';
+import {requireAuth, authenticatedPost} from '../auth/http_requests.js';
 
-window.addEventListener('load', () => {
-    const infoForm = document.getElementById('infoForm');
-
-    infoForm.addEventListener('submit', event => createSwimmerAction(event));
+window.addEventListener('load', async () => {
+    if (await requireAuth()) {
+        const createSwimmerForm = document.getElementById('createSwimmerForm');
+        createSwimmerForm.addEventListener('submit', event => createSwimmer(event));
+    }
 });
+
+function buildSwimmerRequest() {
+    return {
+        coach_id: getParameterById('coach'),
+        name: document.getElementById('name').value,
+        specialization: document.getElementById('specialization').value
+    };
+}
 
 /**
  * Action event handled for creating swimmer.
  *
  * @param {Event} event dom event
  */
-function createSwimmerAction(event) {
+async function createSwimmer(event) {
     event.preventDefault();
-    
-    if (document.getElementById('name').value !== "" && document.getElementById('specialization').value !==  "") {
-        const xhttp = new XMLHttpRequest();
-        xhttp.open("POST", getBackendUrl() + '/swimmers/with_coach', false); // a synchronous request
-        let coach_id = getParameterById('coach');
-        const request = {
-            'coach_id': coach_id,
-            'name': document.getElementById('name').value,
-            'specialization': document.getElementById('specialization').value
-        };
-        xhttp.setRequestHeader('Content-Type', 'application/json');
-        xhttp.send(JSON.stringify(request)); // JSON.parse()
-        alert("Let's see the results!");
+
+    try {
+        const request = buildSwimmerRequest();
+        const response = await authenticatedPost(getBackendUrl() + '/swimmers/with_coach', request);
+        if (response?.ok) {
+            const successfulMessage = await response.text();
+            alert(successfulMessage);
+        } else {
+            console.warn('Create swimmer failed:', response?.status, response?.statusText);
+        }
+    } catch (error) {
+        console.error('Error creating swimmer:', error);
     }
 }

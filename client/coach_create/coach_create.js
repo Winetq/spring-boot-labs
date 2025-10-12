@@ -1,38 +1,40 @@
-import {getParameterById} from '../js/dom_utils.js';
 import {getBackendUrl} from '../js/configuration.js';
+import {requireAuth, authenticatedPost} from '../auth/http_requests.js';
 
-window.addEventListener('load', () => {
-    const infoForm = document.getElementById('infoForm');
-
-    infoForm.addEventListener('submit', event => createCoachAction(event));
+window.addEventListener('load', async () => {
+    if (await requireAuth()) {
+        const createCoachForm = document.getElementById('createCoachForm');
+        createCoachForm.addEventListener('submit', event => createCoach(event));
+    }
 });
+
+function buildCoachRequest() {
+    const nameValue = document.getElementById('name')?.value.trim() || '';
+    const levelValue = document.getElementById('level')?.value.trim() || '';
+    return {
+        name: nameValue === '' ? 'testName' : nameValue,
+        level: levelValue === '' ? '0' : levelValue
+    };
+}
 
 /**
  * Action event handled for creating coach.
  *
  * @param {Event} event dom event
  */
-function createCoachAction(event) {
+async function createCoach(event) {
     event.preventDefault();
 
-    const xhttp = new XMLHttpRequest();
-    xhttp.open("POST", getBackendUrl() + '/coaches', false); // a synchronous request
-    
-    if (document.getElementById('name').value == "" || document.getElementById('level').value ==  "") {
-        const request = {
-            'name': 'name',
-            'level': '0'
-        };
-        xhttp.setRequestHeader('Content-Type', 'application/json');
-        xhttp.send(JSON.stringify(request)); // JSON.parse()
-    } else {
-        const request = {
-            'name': document.getElementById('name').value,
-            'level': document.getElementById('level').value
-        };
-        xhttp.setRequestHeader('Content-Type', 'application/json');
-        xhttp.send(JSON.stringify(request)); // JSON.parse()
+    try {
+        const request = buildCoachRequest();
+        const response = await authenticatedPost(getBackendUrl() + '/coaches', request);
+        if (response?.ok) {
+            const successfulMessage = await response.text();
+            alert(successfulMessage);
+        } else {
+            console.warn('Create coach failed:', response?.status, response?.statusText);
+        }
+    } catch (error) {
+        console.error('Error creating coach:', error);
     }
-    
-    alert("Let's see the results!");
 }

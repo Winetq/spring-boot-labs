@@ -4,34 +4,39 @@ import {
     createLinkCell,
     createButtonCell,
     createTextCell,
-    createImageCell,
     setTextNode
 } from '../js/dom_utils.js';
 import {getBackendUrl} from '../js/configuration.js';
+import {requireAuth, authenticatedGet, authenticatedDelete} from '../auth/http_requests.js';
 
-window.addEventListener('load', () => {
-    prepareCreateSwimmerLink();
-    fetchAndDisplayCoach();
-    fetchAndDisplaySwimmers();
+window.addEventListener('load', async () => {
+    if (await requireAuth()) {
+        await prepareCreateSwimmerLink();
+        await fetchCoach();
+        await fetchSwimmers();
+    }
 });
 
-function prepareCreateSwimmerLink() {
+async function prepareCreateSwimmerLink() {
     let link = document.getElementById('create_swimmer_link');
-    link.appendChild(createLinkCell('create', '../swimmer_create/swimmer_create.html?coach=' + getParameterById('coach')));
+    link.appendChild(createLinkCell('create swimmer', '../swimmer_create/swimmer_create.html?coach=' + getParameterById('coach')));
 }
 
 /**
  * Fetches all swimmers and modifies the DOM tree in order to display them.
  */
-function fetchAndDisplaySwimmers() {
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            displaySwimmers(JSON.parse(this.responseText))
+async function fetchSwimmers() {
+    try {
+        const response = await authenticatedGet(getBackendUrl() + '/coaches/' + getParameterById('coach') + '/swimmers');
+        if (response?.ok) {
+            const swimmers = await response.json();
+            displaySwimmers(swimmers);
+        } else {
+            console.warn('Fetch swimmers failed:', response?.status, response?.statusText);
         }
-    };
-    xhttp.open("GET", getBackendUrl() + '/coaches/' + getParameterById('coach') + '/swimmers', true);
-    xhttp.send();
+    } catch (error) {
+        console.error('Error fetching swimmers:', error);
+    }
 }
 
 /**
@@ -58,38 +63,43 @@ function createTableRow(swimmer) {
     tr.appendChild(createTextCell(swimmer.name));
     tr.appendChild(createTextCell(swimmer.specialization));
     tr.appendChild(createLinkCell('edit', '../swimmer_edit/swimmer_edit.html?coach=' + getParameterById('coach') + '&swimmer=' + swimmer.id));
-    tr.appendChild(createButtonCell('delete', () => deleteSwimmer(swimmer.id)));
+    tr.appendChild(createButtonCell('delete', () => deleteSwimmer(swimmer)));
     return tr;
 }
 
 /**
  * Deletes entity from backend and reloads table.
  *
- * @param {number} swimmer to be deleted
+ * @param {string} swimmer to be deleted
  */
-function deleteSwimmer(id) {
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 202) {
-            fetchAndDisplaySwimmers();
+async function deleteSwimmer(swimmer) {
+    try {
+        const response = await authenticatedDelete(getBackendUrl() + '/swimmers/' + swimmer.id);
+        if (response?.ok) {
+            await fetchSwimmers();
+        } else {
+            console.warn('Delete swimmer failed:', response?.status, response?.statusText);
         }
-    };
-    xhttp.open("DELETE", getBackendUrl() + '/swimmers/' + id, true);
-    xhttp.send();
+    } catch (error) {
+        console.error('Error deleting swimmer:', error);
+    }
 }
 
 /**
  * Fetches single coach and modifies the DOM tree in order to display it.
  */
-function fetchAndDisplayCoach() {
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            displayCoach(JSON.parse(this.responseText))
+async function fetchCoach() {
+    try {
+        const response = await authenticatedGet(getBackendUrl() + '/coaches/' + getParameterById('coach'));
+        if (response?.ok) {
+            const coach = await response.json();
+            displayCoach(coach);
+        } else {
+            console.warn('Fetch coach failed:', response?.status, response?.statusText);
         }
-    };
-    xhttp.open("GET", getBackendUrl() + '/coaches/' + getParameterById('coach'), true);
-    xhttp.send();
+    } catch (error) {
+        console.error('Error fetching coach:', error);
+    }
 }
 
 /**

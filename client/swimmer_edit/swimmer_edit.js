@@ -1,32 +1,35 @@
 import {getParameterById} from '../js/dom_utils.js';
 import {getBackendUrl} from '../js/configuration.js';
+import {requireAuth, authenticatedGet, authenticatedPut} from '../auth/http_requests.js';
 
-window.addEventListener('load', () => {
-    const infoForm = document.getElementById('infoForm');
-
-    infoForm.addEventListener('submit', event => updateInfoAction(event));
-
-    fetchAndDisplaySwimmer();
+window.addEventListener('load', async () => {
+    if (await requireAuth()) {
+        const updateSwimmerForm = document.getElementById('updateSwimmerForm');
+        updateSwimmerForm.addEventListener('submit', event => updateSwimmer(event));
+        await fetchAndDisplaySwimmer();
+    }
 });
 
 /**
- * Fetches currently choosen coach's swimmer and updates edit form.
+ * Fetches currently chosen coach's swimmer and updates edit form.
  */
-function fetchAndDisplaySwimmer() {
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            let response = JSON.parse(this.responseText);
-            for (const [key, value] of Object.entries(response)) {
+async function fetchAndDisplaySwimmer() {
+    try {
+        const response = await authenticatedGet(getBackendUrl() + '/swimmers/' + getParameterById('swimmer'));
+        if (response?.ok) {
+            const swimmer = await response.json();
+            for (const [key, value] of Object.entries(swimmer)) {
                 let input = document.getElementById(key);
                 if (input) {
                     input.value = value;
                 }
             }
+        } else {
+            console.warn('Fetch and display swimmer failed:', response?.status, response?.statusText);
         }
-    };
-    xhttp.open("GET", getBackendUrl() + '/swimmers/' + getParameterById('swimmer'), true);
-    xhttp.send();
+    } catch (error) {
+        console.error('Error fetching and displaying swimmer:', error);
+    }
 }
 
 /**
@@ -34,17 +37,19 @@ function fetchAndDisplaySwimmer() {
  *
  * @param {Event} event dom event
  */
-function updateInfoAction(event) {
+async function updateSwimmer(event) {
     event.preventDefault();
 
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            fetchAndDisplaySwimmer();
+    try {
+        const response = await authenticatedPut(getBackendUrl() + '/swimmers/' + getParameterById('swimmer') +
+            '?specialization=' + document.getElementById('specialization').value);
+        if (response?.ok) {
+            const successfulMessage = await response.text();
+            alert(successfulMessage)
+        } else {
+            console.warn('Update swimmer failed:', response?.status, response?.statusText);
         }
-    };
-    xhttp.open("PUT", getBackendUrl() + '/swimmers/' + getParameterById('swimmer') + '?specialization='
-        + document.getElementById('specialization').value, true);
-    xhttp.send();
-    alert("Let's see the results!");
+    } catch (error) {
+        console.error('Error updating swimmer:', error);
+    }
 }

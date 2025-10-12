@@ -1,32 +1,35 @@
 import {getParameterById} from '../js/dom_utils.js';
 import {getBackendUrl} from '../js/configuration.js';
+import {requireAuth, authenticatedGet, authenticatedPut} from '../auth/http_requests.js';
 
-window.addEventListener('load', () => {
-    const infoForm = document.getElementById('infoForm');
-
-    infoForm.addEventListener('submit', event => updateInfoAction(event));
-
-    fetchAndDisplayCoach();
+window.addEventListener('load', async () => {
+    if (await requireAuth()) {
+        const updateCoachForm = document.getElementById('updateCoachForm');
+        updateCoachForm.addEventListener('submit', event => updateCoach(event));
+        await fetchAndDisplayCoach();
+    }
 });
 
 /**
- * Fetches currently choosen coach and updates edit form.
+ * Fetches currently chosen coach and updates edit form.
  */
-function fetchAndDisplayCoach() {
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            let response = JSON.parse(this.responseText);
-            for (const [key, value] of Object.entries(response)) {
+async function fetchAndDisplayCoach() {
+    try {
+        const response = await authenticatedGet(getBackendUrl() + '/coaches/' + getParameterById('coach'));
+        if (response?.ok) {
+            const coach = await response.json();
+            for (const [key, value] of Object.entries(coach)) {
                 let input = document.getElementById(key);
                 if (input) {
                     input.value = value;
                 }
             }
+        } else {
+            console.warn('Fetch and display coach failed:', response?.status, response?.statusText);
         }
-    };
-    xhttp.open("GET", getBackendUrl() + '/coaches/' + getParameterById('coach'), true);
-    xhttp.send();
+    } catch (error) {
+        console.error('Error fetching and displaying coach:', error);
+    }
 }
 
 /**
@@ -34,17 +37,19 @@ function fetchAndDisplayCoach() {
  *
  * @param {Event} event dom event
  */
-function updateInfoAction(event) {
+async function updateCoach(event) {
     event.preventDefault();
 
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            fetchAndDisplayCoach();
+    try {
+        const response = await authenticatedPut(getBackendUrl() + '/coaches/' + getParameterById('coach') +
+            '?level=' + document.getElementById('level').value);
+        if (response?.ok) {
+            const successfulMessage = await response.text();
+            alert(successfulMessage)
+        } else {
+            console.warn('Update coach failed:', response?.status, response?.statusText);
         }
-    };
-    xhttp.open("PUT", getBackendUrl() + '/coaches/' + getParameterById('coach') + '?level='
-        + document.getElementById('level').value, true);
-    xhttp.send();
-    alert("Let's see the results!");
+    } catch (error) {
+        console.error('Error updating coach:', error);
+    }
 }
