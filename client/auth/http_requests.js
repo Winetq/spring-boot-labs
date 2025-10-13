@@ -110,7 +110,7 @@ function displayCoach(coach) {
 
 
 /**
- * Action event handled for creating coach.
+ * Action event handled for creating entity.
  *
  * @param {Event} event dom event
  * @param {string} url link url
@@ -131,5 +131,30 @@ export async function createEntity(event, url, request, redirectUrl) {
         }
     } catch (error) {
         console.error('Error creating entity:', error);
+    }
+}
+
+
+/**
+ * Action event handled for updating entity info.
+ *
+ * @param {Event} event dom event
+ * @param {string} url link url
+ * @param {string} redirectUrl link to redirect when entity is created
+ */
+export async function updateEntity(event, url, redirectUrl) {
+    event.preventDefault();
+
+    try {
+        const response = await authenticatedPut(url);
+        if (response?.ok) {
+            const successfulMessage = await response.text();
+            alert(successfulMessage);
+            window.location.href = redirectUrl;
+        } else {
+            console.warn('Update entity failed:', response?.status, response?.statusText);
+        }
+    } catch (error) {
+        console.error('Error updating entity:', error);
     }
 }
