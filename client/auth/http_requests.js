@@ -78,29 +78,31 @@ export async function authenticatedDelete(url) {
 
 
 /**
- * Fetches single coach and modifies the DOM tree in order to display it.
+ * Fetches single entity and modifies the DOM tree in order to display it.
+ *
+ * @param {string} url link url
  */
-export async function fetchCoach() {
+export async function fetchEntity(url) {
     try {
-        const response = await authenticatedGet(getBackendUrl() + '/coaches/' + getParameterById('coach'));
+        const response = await authenticatedGet(url);
         if (response?.ok) {
-            const coach = await response.json();
-            displayCoach(coach);
+            const entity = await response.json();
+            displayEntity(entity);
         } else {
-            console.warn('Fetch coach failed:', response?.status, response?.statusText);
+            console.warn('Fetch entity failed:', response?.status, response?.statusText);
         }
     } catch (error) {
-        console.error('Error fetching coach:', error);
+        console.error('Error fetching entity:', error);
     }
 }
 
 /**
- * Updates the DOM tree in order to display coach.
+ * Updates the DOM tree in order to display entity.
  *
- * @param {string} coach
+ * @param {string} entity
  */
-function displayCoach(coach) {
-    for (const [key, value] of Object.entries(coach)) {
+function displayEntity(entity) {
+    for (const [key, value] of Object.entries(entity)) {
         let input = document.getElementById(key);
         if (input) {
             input.value = value;

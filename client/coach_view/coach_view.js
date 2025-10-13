@@ -6,12 +6,12 @@ import {
     createTextCell
 } from '../js/dom_utils.js';
 import {getBackendUrl} from '../js/configuration.js';
-import {requireAuth, authenticatedGet, authenticatedDelete, fetchCoach} from '../auth/http_requests.js';
+import {requireAuth, authenticatedGet, authenticatedDelete, fetchEntity} from '../auth/http_requests.js';
 
 window.addEventListener('load', async () => {
     if (await requireAuth()) {
         await prepareCreateSwimmerLink();
-        await fetchCoach();
+        await fetchEntity(getBackendUrl() + '/coaches/' + getParameterById('coach'));
         await fetchSwimmers();
     }
 });
