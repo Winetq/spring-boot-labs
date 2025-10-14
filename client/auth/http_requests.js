@@ -1,6 +1,3 @@
-import {getParameterById} from '../js/dom_utils.js';
-import {getBackendUrl} from '../js/configuration.js';
-
 const oktaAuth = new OktaAuth({
     issuer: 'https://integrator-7447834.okta.com/oauth2/default',
     clientId: '0oaw3nzfn0RvOt7cc697',
@@ -54,25 +51,25 @@ async function makeAuthenticatedRequest(url, options = {}) {
     }
 }
 
-export async function authenticatedGet(url) {
+async function authenticatedGet(url) {
     return makeAuthenticatedRequest(url, { method: 'GET' });
 }
 
-export async function authenticatedPost(url, data) {
+async function authenticatedPost(url, data) {
     return makeAuthenticatedRequest(url, {
         method: 'POST',
         body: JSON.stringify(data)
     });
 }
 
-export async function authenticatedPut(url, data) {
+async function authenticatedPut(url, data) {
     return makeAuthenticatedRequest(url, {
         method: 'PUT',
         body: JSON.stringify(data)
     });
 }
 
-export async function authenticatedDelete(url) {
+async function authenticatedDelete(url) {
     return makeAuthenticatedRequest(url, { method: 'DELETE' });
 }
 
@@ -107,6 +104,27 @@ function displayEntity(entity) {
         if (input) {
             input.value = value;
         }
+    }
+}
+
+
+/**
+ * Fetches all entities and modifies the DOM tree in order to display them.
+ *
+ * @param {string} url link url
+ * @param {function} displayEntities function that updates the DOM tree in order to display entities
+ */
+export async function fetchEntities(url, displayEntities) {
+    try {
+        const response = await authenticatedGet(url);
+        if (response?.ok) {
+            const entities = await response.json();
+            displayEntities(entities);
+        } else {
+            console.warn('Fetch entities failed:', response?.status, response?.statusText);
+        }
+    } catch (error) {
+        console.error('Error fetching entities:', error);
     }
 }
 
@@ -158,5 +176,27 @@ export async function updateEntity(event, url, redirectUrl) {
         }
     } catch (error) {
         console.error('Error updating entity:', error);
+    }
+}
+
+
+// TODO: allow to delete entity only if user has an appropriate role
+/**
+ * Deletes entity from backend and reloads table.
+ *
+ * @param {string} urlToDelete link url to delete
+ * @param {string} urlToFetch link url to fetch
+ * @param {function} displayEntities function that updates the DOM tree in order to display entities
+ */
+export async function deleteEntity(urlToDelete, urlToFetch, displayEntities) {
+    try {
+        const response = await authenticatedDelete(urlToDelete);
+        if (response?.ok) {
+            await fetchEntities(urlToFetch, displayEntities);
+        } else {
+            console.warn('Delete entity failed:', response?.status, response?.statusText);
+        }
+    } catch (error) {
+        console.error('Error deleting entity:', error);
     }
 }

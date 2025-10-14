@@ -6,36 +6,19 @@ import {
     createTextCell
 } from '../js/dom_utils.js';
 import {getBackendUrl} from '../js/configuration.js';
-import {requireAuth, authenticatedGet, authenticatedDelete, fetchEntity} from '../auth/http_requests.js';
+import {requireAuth, fetchEntity, fetchEntities, deleteEntity} from '../auth/http_requests.js';
 
 window.addEventListener('load', async () => {
     if (await requireAuth()) {
         await prepareCreateSwimmerLink();
         await fetchEntity(getBackendUrl() + '/coaches/' + getParameterById('coach'));
-        await fetchSwimmers();
+        await fetchEntities(getBackendUrl() + '/coaches/' + getParameterById('coach') + '/swimmers', displaySwimmers);
     }
 });
 
 async function prepareCreateSwimmerLink() {
     let link = document.getElementById('create_swimmer_link');
     link.appendChild(createLinkCell('create swimmer', '../swimmer_create/swimmer_create.html?coach=' + getParameterById('coach')));
-}
-
-/**
- * Fetches all swimmers and modifies the DOM tree in order to display them.
- */
-async function fetchSwimmers() {
-    try {
-        const response = await authenticatedGet(getBackendUrl() + '/coaches/' + getParameterById('coach') + '/swimmers');
-        if (response?.ok) {
-            const swimmers = await response.json();
-            displaySwimmers(swimmers);
-        } else {
-            console.warn('Fetch swimmers failed:', response?.status, response?.statusText);
-        }
-    } catch (error) {
-        console.error('Error fetching swimmers:', error);
-    }
 }
 
 /**
@@ -62,25 +45,13 @@ function createTableRow(swimmer) {
     tr.appendChild(createTextCell(swimmer.name));
     tr.appendChild(createTextCell(swimmer.specialization));
     tr.appendChild(createLinkCell('edit', '../swimmer_edit/swimmer_edit.html?coach=' + getParameterById('coach') + '&swimmer=' + swimmer.id));
-    tr.appendChild(createButtonCell('delete', () => deleteSwimmer(swimmer)));
+    tr.appendChild(createButtonCell('delete', () =>
+            deleteEntity(
+                getBackendUrl() + '/swimmers/' + swimmer.id,
+                getBackendUrl() + '/coaches/' + getParameterById('coach') + '/swimmers',
+                displaySwimmers
+            )
+        )
+    );
     return tr;
-}
-
-// TODO: allow to delete coach only if user has an appropriate role
-/**
- * Deletes entity from backend and reloads table.
- *
- * @param {string} swimmer to be deleted
- */
-async function deleteSwimmer(swimmer) {
-    try {
-        const response = await authenticatedDelete(getBackendUrl() + '/swimmers/' + swimmer.id);
-        if (response?.ok) {
-            await fetchSwimmers();
-        } else {
-            console.warn('Delete swimmer failed:', response?.status, response?.statusText);
-        }
-    } catch (error) {
-        console.error('Error deleting swimmer:', error);
-    }
 }
