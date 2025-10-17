@@ -21,6 +21,9 @@ import static org.springframework.http.HttpMethod.PUT;
 public class SpringBootLabsApplication {
 
     private static final String ALLOW_ALL = "*";
+    private static final String GATEWAY_HOST = "localhost:8080";
+    private static final String COACH_HOST = "http://coach:8081";
+    private static final String SWIMMER_HOST = "http://swimmer:8082";
     private static final String CLIENT_HOST = "http://localhost:8083";
 
     public static void main(String[] args) {
@@ -31,16 +34,16 @@ public class SpringBootLabsApplication {
 	public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
 		return builder
 				.routes()
-				.route("coaches", r -> r
-						.host("localhost:8080")
+				.route("coach", r -> r
+						.host(GATEWAY_HOST)
 						.and()
 						.path("/coaches/**", "/coaches")
-						.uri("http://coaches:8081"))
-				.route("swimmers", r -> r
-						.host("localhost:8080")
+						.uri(COACH_HOST))
+				.route("swimmer", r -> r
+						.host(GATEWAY_HOST)
 						.and()
 						.path("/swimmers/**", "/swimmers")
-						.uri("http://swimmers:8082"))
+						.uri(SWIMMER_HOST))
 				.build();
 	}
 
