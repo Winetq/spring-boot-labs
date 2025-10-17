@@ -4,14 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import static java.time.Duration.between;
+import static java.time.Instant.now;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpMethod.*;
+import static org.springframework.http.HttpMethod.OPTIONS;
+import static reactor.core.publisher.Mono.empty;
 
 @Slf4j
 @Order(-100) // run before security filters
@@ -19,6 +23,12 @@ import static org.springframework.http.HttpMethod.*;
 public class JwtLoggingFilter implements WebFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
+
+    private final ReactiveJwtDecoder jwtDecoder;
+
+    public JwtLoggingFilter(ReactiveJwtDecoder jwtDecoder) {
+        this.jwtDecoder = jwtDecoder;
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -32,13 +42,29 @@ public class JwtLoggingFilter implements WebFilter {
 
         String authHeader = request.getHeaders().getFirst(AUTHORIZATION);
 
-        if (authHeader != null) {
+        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
             String token = authHeader.substring(BEARER_PREFIX.length());
-            log.info("Request to {} {} - Access token present: YES, Token: {}", httpMethod, path, token.substring(0, Math.min(20, token.length())) + "...");
-        } else {
-            log.warn("Request to {} {} - Access token present: NO", httpMethod, path);
+            return decodeToken(token, exchange, chain, httpMethod, path);
         }
 
+        log.warn("Request to {} {} - Access token present: NO", httpMethod, path);
         return chain.filter(exchange);
+    }
+
+    private Mono<Void> decodeToken(String token, ServerWebExchange exchange, WebFilterChain chain, HttpMethod httpMethod, String path) {
+        return jwtDecoder.decode(token)
+                .doOnNext(jwt -> {
+                    String subject = jwt.getSubject();
+                    long minutesUntilExpiry = between(now(), jwt.getExpiresAt()).toMinutes();
+                    log.info(
+                            "Request to {} {} - Access token decoded - Subject: {}, Expires in: {} minutes",
+                            httpMethod, path, subject, minutesUntilExpiry
+                    );
+                })
+                .onErrorResume(e -> {
+                    log.error("Request to {} {} - Access token decode failed: {}", httpMethod, path, e.getMessage());
+                    return empty();
+                })
+                .then(chain.filter(exchange));
     }
 }

@@ -11,11 +11,19 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.OPTIONS;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 
 @SpringBootApplication
 public class SpringBootLabsApplication {
 
-	public static void main(String[] args) {
+    private static final String ALLOW_ALL = "*";
+    private static final String CLIENT_HOST = "http://localhost:8083";
+
+    public static void main(String[] args) {
 		SpringApplication.run(SpringBootLabsApplication.class, args);
 	}
 
@@ -40,10 +48,10 @@ public class SpringBootLabsApplication {
 	public CorsWebFilter corsWebFilter() {
 
 		final CorsConfiguration corsConfig = new CorsConfiguration();
-		corsConfig.setAllowedOrigins(singletonList("http://localhost:8083"));
+		corsConfig.setAllowedOrigins(singletonList(CLIENT_HOST));
 		corsConfig.setMaxAge(3600L);
-		corsConfig.setAllowedMethods(asList("GET", "POST", "DELETE", "PUT", "OPTIONS"));
-		corsConfig.addAllowedHeader("*");
+		corsConfig.setAllowedMethods(asList(GET.name(), POST.name(), DELETE.name(), PUT.name(), OPTIONS.name()));
+		corsConfig.addAllowedHeader(ALLOW_ALL);
 
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", corsConfig);
