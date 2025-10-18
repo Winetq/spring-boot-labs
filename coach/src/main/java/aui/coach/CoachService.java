@@ -1,7 +1,7 @@
 package aui.coach;
 
 import aui.coach.event.CoachEventRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -10,16 +10,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 @Service
+@RequiredArgsConstructor
 public class CoachService {
+
     private final CoachRepository coachRepository;
     private final CoachEventRepository eventRepository;
-
-    @Autowired
-    public CoachService(CoachRepository coachRepository, CoachEventRepository eventRepository) {
-        this.coachRepository = coachRepository;
-        this.eventRepository = eventRepository;
-    }
 
     Optional<Coach> find(Long id) {
         return coachRepository.findById(id);
@@ -44,9 +42,8 @@ public class CoachService {
     ResponseEntity<String> getCoachSwimmers(Long id) {
         Optional<Coach> coach = coachRepository.findById(id);
         if (coach.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(NOT_FOUND);
         }
         return eventRepository.getCoachSwimmers(id);
     }
 }
-

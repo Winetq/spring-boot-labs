@@ -3,31 +3,31 @@ package aui.coach;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Component
-@NoArgsConstructor
-@EqualsAndHashCode
+import static javax.persistence.GenerationType.IDENTITY;
+
 @Entity
 @Table(name = "coaches")
 @Getter
+@EqualsAndHashCode
+@NoArgsConstructor
 public class Coach {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = IDENTITY)
     @EqualsAndHashCode.Exclude
     private Long id;
 
-    @Column(name = "coach_name")
+    @Column
     private String name;
 
-    @Column(name = "coach_level")
+    @Column
     private int level;
 
     public Coach(String name, int level) {
@@ -39,4 +39,3 @@ public class Coach {
         this.level = level;
     }
 }
-

@@ -1,20 +1,21 @@
 package aui.coach.dto;
 
 import aui.coach.Coach;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+import static lombok.AccessLevel.PRIVATE;
+
 @Getter
-public class POSTCoachDTO {
+@NoArgsConstructor
+@AllArgsConstructor(access = PRIVATE)
+public class PostCoachDto {
+
     private String name;
     private int level;
 
-    public static Coach dtoToEntity(POSTCoachDTO coach) {
+    public static Coach dtoToEntity(PostCoachDto coach) {
         return new Coach(coach.getName(), coach.getLevel());
     }
 }
-

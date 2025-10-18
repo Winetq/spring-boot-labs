@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Repository
 public class CoachEventRepository {
+
     private final RestTemplate restTemplate;
 
     @Autowired
@@ -29,4 +30,3 @@ public class CoachEventRepository {
         return restTemplate.getForEntity("/coaches/" + id + "/swimmers", String.class);
     }
 }
-

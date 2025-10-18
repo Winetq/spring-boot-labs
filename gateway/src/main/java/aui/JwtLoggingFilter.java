@@ -1,5 +1,6 @@
 package aui;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
@@ -20,15 +21,12 @@ import static reactor.core.publisher.Mono.empty;
 @Slf4j
 @Order(-100) // run before security filters
 @Component
+@RequiredArgsConstructor
 public class JwtLoggingFilter implements WebFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final ReactiveJwtDecoder jwtDecoder;
-
-    public JwtLoggingFilter(ReactiveJwtDecoder jwtDecoder) {
-        this.jwtDecoder = jwtDecoder;
-    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
