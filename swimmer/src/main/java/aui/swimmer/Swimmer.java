@@ -5,23 +5,31 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
-@Component
-@NoArgsConstructor
-@EqualsAndHashCode
+import static javax.persistence.EnumType.STRING;
+import static javax.persistence.GenerationType.IDENTITY;
+
 @Entity
 @Table(name = "swimmers")
 @Getter
+@NoArgsConstructor
+@EqualsAndHashCode
 public class Swimmer {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = IDENTITY)
     @EqualsAndHashCode.Exclude
     private Long id;
 
-    @Column(name = "swimmer_name")
+    @Column
     private String name;
 
     @ManyToOne
@@ -29,7 +37,7 @@ public class Swimmer {
     @JsonIgnore
     private Coach coach;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(STRING)
     private SwimmingStyle specialization;
 
     public Swimmer(String name, SwimmingStyle specialization) {
@@ -47,4 +55,3 @@ public class Swimmer {
         this.specialization = specialization;
     }
 }
-

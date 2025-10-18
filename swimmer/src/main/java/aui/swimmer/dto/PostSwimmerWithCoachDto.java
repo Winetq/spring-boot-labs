@@ -3,21 +3,22 @@ package aui.swimmer.dto;
 import aui.coach.Coach;
 import aui.swimmer.Swimmer;
 import aui.swimmer.SwimmingStyle;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+import static lombok.AccessLevel.PRIVATE;
+
 @Getter
-public class POSTSwimmerWithCoachDTO {
+@NoArgsConstructor
+@AllArgsConstructor(access = PRIVATE)
+public class PostSwimmerWithCoachDto {
+
     private String name;
-    private Long coach_id;
+    private Long coachId;
     private SwimmingStyle specialization;
 
-    public static Swimmer dtoTOEntity(POSTSwimmerWithCoachDTO swimmer, Coach coach) {
+    public static Swimmer dtoToEntity(PostSwimmerWithCoachDto swimmer, Coach coach) {
         return new Swimmer(swimmer.getName(), coach, swimmer.getSpecialization());
     }
 }
-

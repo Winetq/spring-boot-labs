@@ -1,5 +1,6 @@
 package aui.swimmer;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -8,15 +9,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class SwimmerService {
+
     private final SwimmerRepository swimmerRepository;
     private final SwimmerEventRepository swimmerEventRepository;
-
-    @Autowired
-    public SwimmerService(SwimmerRepository swimmerRepository, SwimmerEventRepository swimmerEventRepository) {
-        this.swimmerRepository = swimmerRepository;
-        this.swimmerEventRepository = swimmerEventRepository;
-    }
 
     Optional<Swimmer> find(Long id) {
         return swimmerRepository.findById(id);
@@ -38,4 +35,3 @@ public class SwimmerService {
         return swimmerEventRepository.getSwimmerCoach(swimmer);
     }
 }
-

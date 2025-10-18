@@ -7,4 +7,3 @@ import org.springframework.stereotype.Repository;
 interface SwimmerRepository extends JpaRepository<Swimmer, Long> {
 
 }
-

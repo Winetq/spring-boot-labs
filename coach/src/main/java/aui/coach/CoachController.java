@@ -47,8 +47,8 @@ class CoachController {
     }
 
     @PostMapping
-    ResponseEntity<String> createCoach(@RequestBody PostCoachDto coachDTO) {
-        Coach coach = PostCoachDto.dtoToEntity(coachDTO);
+    ResponseEntity<String> createCoach(@RequestBody PostCoachDto coachDto) {
+        Coach coach = PostCoachDto.dtoToEntity(coachDto);
         List<Coach> coaches = coachService.findAll();
         if (coaches.contains(coach)) return new ResponseEntity<>("This coach was already created!", BAD_REQUEST);
         coachService.create(coach);

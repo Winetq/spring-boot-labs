@@ -1,15 +1,17 @@
 package aui.coach.dto;
 
 import aui.coach.Coach;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+import static lombok.AccessLevel.PRIVATE;
+
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor(access = PRIVATE)
 public class CreateCoachRequest {
+
     private Long id;
 
     public static Coach dtoToEntity(CreateCoachRequest request) {

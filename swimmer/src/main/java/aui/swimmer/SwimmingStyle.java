@@ -15,4 +15,3 @@ public enum SwimmingStyle {
         throw new IllegalArgumentException();
     }
 }
-

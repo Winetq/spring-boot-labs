@@ -1,4 +1,4 @@
-package aui.coach.config;
+package aui.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

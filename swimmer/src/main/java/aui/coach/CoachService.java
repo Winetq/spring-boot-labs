@@ -1,19 +1,16 @@
 package aui.coach;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CoachService {
-    private final CoachRepository repository;
 
-    @Autowired
-    public CoachService(CoachRepository repository) {
-        this.repository = repository;
-    }
+    private final CoachRepository repository;
 
     public Optional<Coach> find(Long id) {
         return repository.findById(id);
@@ -29,4 +26,3 @@ public class CoachService {
         repository.delete(entity);
     }
 }
-
