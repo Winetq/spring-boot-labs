@@ -21,7 +21,7 @@ function buildSwimmerRequest() {
     const nameValue = document.getElementById('name')?.value.trim() || '';
     const specializationValue = document.getElementById('specialization')?.value.trim() || '';
     return {
-        coach_id: getParameterById('coach'),
+        coachId: getParameterById('coach'),
         name: nameValue === '' ? 'testName' : nameValue,
         specialization: specializationValue === '' ? 'FREESTYLE' : specializationValue
     };
