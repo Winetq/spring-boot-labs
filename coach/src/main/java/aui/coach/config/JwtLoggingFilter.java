@@ -27,6 +27,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @RequiredArgsConstructor
 public class JwtLoggingFilter implements Filter {
 
+    private static final String ROLE_CLAIM = "role";
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtDecoder jwtDecoder;
@@ -56,10 +57,11 @@ public class JwtLoggingFilter implements Filter {
     private void decodeToken(String token, HttpServletRequest request) {
         Jwt jwt = jwtDecoder.decode(token);
         String subject = jwt.getSubject();
+        String role = jwt.getClaimAsString(ROLE_CLAIM);
         long minutesUntilExpiry = between(now(), jwt.getExpiresAt()).toMinutes();
         log.info(
-                "Received request on {} with access token - subject: {}, expires in: {} minutes",
-                request.getRequestURI(), subject, minutesUntilExpiry
+                "Received request on {} with access token - subject: {} ({}), expires in: {} minutes",
+                request.getRequestURI(), subject, role, minutesUntilExpiry
         );
     }
 }

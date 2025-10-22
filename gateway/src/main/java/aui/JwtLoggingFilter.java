@@ -24,6 +24,7 @@ import static reactor.core.publisher.Mono.empty;
 @RequiredArgsConstructor
 public class JwtLoggingFilter implements WebFilter {
 
+    private static final String ROLE_CLAIM = "role";
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final ReactiveJwtDecoder jwtDecoder;
@@ -53,10 +54,11 @@ public class JwtLoggingFilter implements WebFilter {
         return jwtDecoder.decode(token)
                 .doOnNext(jwt -> {
                     String subject = jwt.getSubject();
+                    String role = jwt.getClaimAsString(ROLE_CLAIM);
                     long minutesUntilExpiry = between(now(), jwt.getExpiresAt()).toMinutes();
                     log.info(
-                            "Request to {} {} - Access token decoded - Subject: {}, Expires in: {} minutes",
-                            httpMethod, path, subject, minutesUntilExpiry
+                            "Request to {} {} - Access token decoded - Subject: {} ({}), Expires in: {} minutes",
+                            httpMethod, path, subject, role, minutesUntilExpiry
                     );
                 })
                 .onErrorResume(e -> {
