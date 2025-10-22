@@ -217,7 +217,6 @@ export async function updateEntity(event, url, redirectUrl) {
 }
 
 
-// TODO: allow to delete entity only if user has an appropriate role
 /**
  * Deletes entity from backend and reloads table.
  *
@@ -230,6 +229,9 @@ export async function deleteEntity(urlToDelete, urlToFetch, displayEntities) {
         const response = await authenticatedDelete(urlToDelete);
         if (response?.ok) {
             await fetchEntities(urlToFetch, displayEntities);
+        } else if (response?.status === 403) {
+            console.warn('Access denied - insufficient permissions to delete the entity');
+            alert('You do not have permission to delete the entity. Admin access required.');
         } else {
             console.warn('Delete entity failed:', response?.status, response?.statusText);
         }

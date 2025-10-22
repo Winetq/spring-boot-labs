@@ -6,7 +6,10 @@ import aui.swimmer.dto.GetSwimmerDto;
 import aui.swimmer.dto.PostSwimmerDto;
 import aui.swimmer.dto.PostSwimmerWithCoachDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +27,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+@Slf4j
 @RestController
 @RequestMapping("swimmers")
 @RequiredArgsConstructor
@@ -84,7 +88,9 @@ class SwimmerController {
     }
 
     @DeleteMapping("{id}")
-    ResponseEntity<String> deleteSwimmer(@PathVariable Long id) {
+    @PreAuthorize("hasAuthority('admin')")
+    ResponseEntity<String> deleteSwimmer(@PathVariable Long id, Authentication authentication) {
+        log.info("User authorities: {}", authentication.getAuthorities());
         Optional<Swimmer> swimmer = swimmerService.find(id);
         if (swimmer.isEmpty()) return new ResponseEntity<>("This swimmer does not exist!", NOT_FOUND);
         swimmerService.delete(swimmer.get());

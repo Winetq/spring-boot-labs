@@ -3,7 +3,10 @@ package aui.coach;
 import aui.coach.dto.GetCoachDto;
 import aui.coach.dto.PostCoachDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +24,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+@Slf4j
 @RestController
 @RequestMapping("coaches")
 @RequiredArgsConstructor
@@ -66,7 +70,9 @@ class CoachController {
     }
 
     @DeleteMapping("{id}")
-    ResponseEntity<String> deleteCoach(@PathVariable Long id) {
+    @PreAuthorize("hasAuthority('admin')")
+    ResponseEntity<String> deleteCoach(@PathVariable Long id, Authentication authentication) {
+        log.info("User authorities: {}", authentication.getAuthorities());
         Optional<Coach> coach = coachService.find(id);
         if (coach.isEmpty()) return new ResponseEntity<>("This coach does not exist!", NOT_FOUND);
         coachService.delete(coach.get());
