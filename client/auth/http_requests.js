@@ -2,10 +2,20 @@ const oktaAuth = new OktaAuth({
     issuer: 'https://integrator-7447834.okta.com/oauth2/default',
     clientId: '0oaw3nzfn0RvOt7cc697',
     redirectUri: window.location.origin + '/index.html',
-    scopes: ['openid', 'profile', 'email'],
+    scopes: ['openid', 'profile', 'email', `offline_access`],
     responseType: ['code'],
     pkce: true,
-    tokenManager: { storage: 'localStorage' }
+    tokenManager: {
+        storage: 'localStorage',
+        autoRenew: true
+    }
+});
+
+
+oktaAuth.tokenManager.on('renewed', function (key, newToken, oldToken) {
+    console.log('AUTO-RENEWAL happened for:', key);
+    console.log('Old token expired at:', new Date(oldToken.expiresAt * 1000));
+    console.log('New token expires at:', new Date(newToken.expiresAt * 1000));
 });
 
 
@@ -23,8 +33,12 @@ export async function requireAuth() {
 
 
 async function makeAuthenticatedRequest(url, options = {}) {
-    const accessToken = oktaAuth.getAccessToken();
-    if (!accessToken) return null;
+    const accessToken = await oktaAuth.getAccessToken();
+
+    if (!accessToken) {
+        redirectToLogin();
+        return null;
+    }
 
     const headers = {
         'Authorization': `Bearer ${accessToken}`,
@@ -35,19 +49,42 @@ async function makeAuthenticatedRequest(url, options = {}) {
     try {
         const response = await fetch(url, {
             ...options,
-            headers
+            headers: headers
         });
 
         if (response.status === 401) {
             console.error('Access Token expired or invalid:', accessToken);
-            redirectToLogin();
-            return null;
+            return tryToRefreshAccessToken(url, options);
         }
 
         return response;
     } catch (error) {
         console.error('Request failed:', error);
         throw error;
+    }
+}
+
+async function tryToRefreshAccessToken(url, options) {
+    try {
+        console.log('MANUAL-RENEWAL triggered - autoRenew may be disabled');
+        await oktaAuth.tokenManager.renew('accessToken');
+        const newAccessToken = await oktaAuth.getAccessToken();
+
+        const newHeaders = {
+            'Authorization': `Bearer ${newAccessToken}`,
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
+
+        console.log('Access token renewed successfully, retrying request...');
+        return await fetch(url, {
+            ...options,
+            headers: newHeaders
+        });
+    } catch (renewError) {
+        console.error('Access token renewal failed:', renewError);
+        redirectToLogin();
+        return null;
     }
 }
 

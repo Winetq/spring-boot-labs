@@ -46,10 +46,11 @@ public class JwtLoggingFilter implements Filter {
         try {
             String token = authHeader.substring(BEARER_PREFIX.length());
             decodeToken(token, httpRequest);
-            chain.doFilter(request, response);
         } catch (JwtException e) {
             log.error("Access token decode failed: {}", e.getMessage());
         }
+
+        chain.doFilter(request, response);
     }
 
     private void decodeToken(String token, HttpServletRequest request) {

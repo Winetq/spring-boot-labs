@@ -2,11 +2,15 @@ const oktaAuth = new OktaAuth({
     issuer: 'https://integrator-7447834.okta.com/oauth2/default',
     clientId: '0oaw3nzfn0RvOt7cc697',
     redirectUri: window.location.origin + '/index.html',
-    scopes: ['openid', 'profile', 'email'],
+    scopes: ['openid', 'profile', 'email', `offline_access`],
     responseType: ['code'],
     pkce: true,
-    tokenManager: { storage: 'localStorage' }
+    tokenManager: {
+        storage: 'localStorage',
+        autoRenew: true
+    }
 });
+
 
 async function handleAuthCallback() {
     if (window.location.search.includes('code=')) {
@@ -27,6 +31,7 @@ function redirectToLogin() {
 async function showUserInfo() {
     const accessToken = oktaAuth.getAccessToken();
     const idToken = oktaAuth.getIdToken();
+    const refreshToken = oktaAuth.getRefreshToken();
 
     if (!accessToken || !idToken) return;
 
@@ -37,6 +42,7 @@ async function showUserInfo() {
         <button id="logoutBtn" class="ui-control ui-button">Logout</button>
         <pre style="word-break: break-all; white-space: pre-wrap;">Access Token: \n${accessToken}</pre>
         <pre style="word-break: break-all; white-space: pre-wrap;">ID Token: \n${idToken}</pre>
+        <pre style="word-break: break-all; white-space: pre-wrap;">Refresh Token: \n${refreshToken}</pre>
     `;
     document.getElementById('logoutBtn').onclick = logout;
     showAuthenticatedNavigation();
