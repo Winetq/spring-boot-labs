@@ -19,6 +19,7 @@ import static lombok.AccessLevel.PRIVATE;
 public class GetSwimmerDto {
 
     private String name;
+    private Long coachId;
     private SwimmingStyle specialization;
 
     public static List<GetSwimmerDto> entityToDto(List<Swimmer> swimmers) {
@@ -30,6 +31,7 @@ public class GetSwimmerDto {
     public static GetSwimmerDto entityToDto(Swimmer swimmer) {
         return GetSwimmerDto.builder()
                 .name(swimmer.getName())
+                .coachId(swimmer.getCoachId())
                 .specialization(swimmer.getSpecialization())
                 .build();
     }

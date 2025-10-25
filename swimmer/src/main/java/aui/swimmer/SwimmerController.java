@@ -1,10 +1,7 @@
 package aui.swimmer;
 
-import aui.coach.Coach;
-import aui.coach.CoachService;
 import aui.swimmer.dto.GetSwimmerDto;
 import aui.swimmer.dto.PostSwimmerDto;
-import aui.swimmer.dto.PostSwimmerWithCoachDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,79 +18,55 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
 @RestController
 @RequestMapping("swimmers")
 @RequiredArgsConstructor
-class SwimmerController {
+public class SwimmerController {
 
     private final SwimmerService swimmerService;
-    private final CoachService coachService;
 
     @GetMapping
-    ResponseEntity<List<GetSwimmerDto>> getSwimmers() {
+    public ResponseEntity<List<GetSwimmerDto>> getSwimmers() {
         List<Swimmer> swimmers = swimmerService.findAll();
         List<GetSwimmerDto> swimmersDto = GetSwimmerDto.entityToDto(swimmers);
         return new ResponseEntity<>(swimmersDto, OK);
     }
 
     @GetMapping("{id}")
-    ResponseEntity<GetSwimmerDto> getSwimmer(@PathVariable Long id) {
-        Optional<Swimmer> swimmer = swimmerService.find(id);
-        if (swimmer.isEmpty()) return new ResponseEntity<>(NOT_FOUND);
-        return new ResponseEntity<>(GetSwimmerDto.entityToDto(swimmer.get()), OK);
-    }
-
-    @GetMapping("{id}/coach")
-    ResponseEntity<String> getSwimmerCoach(@PathVariable Long id) {
-        Optional<Swimmer> swimmer = swimmerService.find(id);
-        if (swimmer.isEmpty()) return new ResponseEntity<>(NOT_FOUND);
-        return swimmerService.getSwimmerCoach(swimmer.get());
+    public ResponseEntity<GetSwimmerDto> getSwimmer(@PathVariable Long id) {
+        return swimmerService.find(id)
+                .map(swimmer -> new ResponseEntity<>(GetSwimmerDto.entityToDto(swimmer), OK))
+                .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
     }
 
     @PostMapping
-    ResponseEntity<String> createSwimmer(@RequestBody PostSwimmerDto swimmerDto) {
+    public ResponseEntity<String> createSwimmer(@RequestBody PostSwimmerDto swimmerDto) {
         Swimmer swimmer = PostSwimmerDto.dtoToEntity(swimmerDto);
-        List<Swimmer> swimmers = swimmerService.findAll();
-        if (swimmers.contains(swimmer)) return new ResponseEntity<>("This swimmer was already created!", BAD_REQUEST);
-        swimmerService.create(swimmer);
-        return new ResponseEntity<>("A swimmer was added to the database!", OK);
-    }
-
-    @PostMapping("with_coach")
-    ResponseEntity<String> createSwimmerWithCoach(@RequestBody PostSwimmerWithCoachDto swimmerDto) {
-        Optional<Coach> coach = coachService.find(swimmerDto.getCoachId());
-        if (coach.isEmpty()) return new ResponseEntity<>("This coach does not exist!", NOT_FOUND);
-        Swimmer swimmer = PostSwimmerWithCoachDto.dtoToEntity(swimmerDto, coach.get());
-        List<Swimmer> swimmers = swimmerService.findAll();
-        if (swimmers.contains(swimmer)) return new ResponseEntity<>("This swimmer was already created!", BAD_REQUEST);
-        swimmerService.create(swimmer);
-        return new ResponseEntity<>("A swimmer was added to the database!", OK);
+        Swimmer savedSwimmer = swimmerService.save(swimmer);
+        return new ResponseEntity<>("Swimmer %s was added to the database!".formatted(savedSwimmer.getName()), CREATED);
     }
 
     @PutMapping("{id}")
-    ResponseEntity<String> changeSwimmerSpecialization(@PathVariable Long id,
-                                                       @RequestParam String specialization) {
-        Optional<Swimmer> swimmer = swimmerService.find(id);
-        if (swimmer.isEmpty()) return new ResponseEntity<>("This swimmer does not exist", NOT_FOUND);
-        swimmer.get().updateSwimmerSpecialization(SwimmingStyle.of(specialization));
-        swimmerService.create(swimmer.get());
-        return new ResponseEntity<>("A swimmer specialization was updated!", OK);
+    public ResponseEntity<String> updateSpecialization(@PathVariable Long id, @RequestParam String specialization) {
+        Swimmer updatedSwimmer = swimmerService.updateSpecialization(id, specialization);
+        return updatedSwimmer != null
+                ? new ResponseEntity<>("A swimmer specialization was updated to %s!".formatted(updatedSwimmer.getSpecialization()), CREATED)
+                : new ResponseEntity<>("This swimmer does not exist!", NO_CONTENT);
     }
 
     @DeleteMapping("{id}")
     @PreAuthorize("hasAuthority('admin')")
-    ResponseEntity<String> deleteSwimmer(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<String> deleteSwimmer(@PathVariable Long id, Authentication authentication) {
         log.info("User authorities: {}", authentication.getAuthorities());
-        Optional<Swimmer> swimmer = swimmerService.find(id);
-        if (swimmer.isEmpty()) return new ResponseEntity<>("This swimmer does not exist!", NOT_FOUND);
-        swimmerService.delete(swimmer.get());
-        return new ResponseEntity<>("This swimmer was successfully deleted!", OK);
+        return swimmerService.delete(id)
+                ? new ResponseEntity<>("This swimmer was successfully deleted!", OK)
+                : new ResponseEntity<>("This swimmer does not exist!", NOT_FOUND);
     }
 }

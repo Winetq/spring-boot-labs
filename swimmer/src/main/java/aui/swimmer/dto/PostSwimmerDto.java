@@ -14,9 +14,10 @@ import static lombok.AccessLevel.PRIVATE;
 public class PostSwimmerDto {
 
     private String name;
+    private Long coachId;
     private SwimmingStyle specialization;
 
-    public static Swimmer dtoToEntity(PostSwimmerDto swimmer) {
-        return new Swimmer(swimmer.getName(), swimmer.getSpecialization());
+    public static Swimmer dtoToEntity(PostSwimmerDto swimmerDto) {
+        return new Swimmer(swimmerDto.getName(), swimmerDto.getCoachId(), swimmerDto.getSpecialization());
     }
 }

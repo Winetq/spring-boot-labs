@@ -2,7 +2,6 @@ package aui.coach;
 
 import aui.coach.event.CoachEventRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,8 +28,7 @@ public class CoachService {
 
     @Transactional
     public void create(Coach entity) {
-        coachRepository.save(entity); // it has to be first in order to set the ID
-        eventRepository.create(entity);
+        coachRepository.save(entity);
     }
 
     @Transactional

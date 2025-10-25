@@ -1,17 +1,14 @@
 package aui.swimmer;
 
-import aui.coach.Coach;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import static javax.persistence.EnumType.STRING;
@@ -21,37 +18,25 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Table(name = "swimmers")
 @Getter
 @NoArgsConstructor
-@EqualsAndHashCode
 public class Swimmer {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    @EqualsAndHashCode.Exclude
     private Long id;
 
     @Column
     private String name;
 
-    @ManyToOne
-    @EqualsAndHashCode.Exclude
-    @JsonIgnore
-    private Coach coach;
+    @Column(name = "coach_id")
+    private Long coachId;
 
+    @Setter
     @Enumerated(STRING)
     private SwimmingStyle specialization;
 
-    public Swimmer(String name, SwimmingStyle specialization) {
+    public Swimmer(String name, Long coachId, SwimmingStyle specialization) {
         this.name = name;
-        this.specialization = specialization;
-    }
-
-    public Swimmer(String name, Coach coach, SwimmingStyle specialization) {
-        this.name = name;
-        this.coach = coach;
-        this.specialization = specialization;
-    }
-
-    public void updateSwimmerSpecialization(SwimmingStyle specialization) {
+        this.coachId = coachId;
         this.specialization = specialization;
     }
 }

@@ -26,12 +26,6 @@ public class CoachEventRepository {
         this.accessTokenRetriever = accessTokenRetriever;
     }
 
-    public void create(Coach coach) {
-        HttpHeaders authHeader = createAuthHeader();
-        HttpEntity<CreateCoachRequest> request = new HttpEntity<>(CreateCoachRequest.entityToDto(coach), authHeader);
-        restTemplate.postForEntity("/coaches", request, Void.class);
-    }
-
     public void delete(Coach coach) {
         HttpHeaders authHeader = createAuthHeader();
         HttpEntity<Void> request = new HttpEntity<>(authHeader);

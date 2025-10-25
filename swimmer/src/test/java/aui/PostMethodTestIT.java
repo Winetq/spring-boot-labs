@@ -15,8 +15,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @SpringBootTest(classes = SpringBootLabsApplication.class)
@@ -54,11 +53,11 @@ public class PostMethodTestIT extends AbstractTestNGSpringContextTests { // e2e 
     public Object[][] provideUriAndResponse() {
         return new Object[][] {
                 {"/swimmers", "{ \"name\": \"Michael\", \"specialization\": \"BUTTERFLY\" }",
-                        "A swimmer was added to the database!", OK},
-                {"/swimmers", "{ \"name\": \"Michael\", \"specialization\": \"BUTTERFLY\" }",
-                        "This swimmer was already created!", BAD_REQUEST},
+                        "Swimmer Michael was added to the database!", CREATED},
+                {"/swimmers", "{ \"name\": \"Michael\", \"specialization\": \"FREESTYLE\" }",
+                        "Swimmer Michael was added to the database!", CREATED},
                 {"/swimmers", "{ \"name\": \"Jacob\", \"specialization\": \"BUTTERFLY\" }",
-                        "A swimmer was added to the database!", OK}
+                        "Swimmer Jacob was added to the database!", CREATED}
         };
     }
 }
