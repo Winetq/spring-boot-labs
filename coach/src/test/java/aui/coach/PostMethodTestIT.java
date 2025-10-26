@@ -1,49 +1,52 @@
 package aui.coach;
 
 import aui.SpringBootLabsApplication;
-import aui.coach.event.CoachEventRepository;
-import io.restassured.module.mockmvc.response.MockMvcResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 
-import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @SpringBootTest(classes = SpringBootLabsApplication.class)
-public class PostMethodTestIT {
+public class PostMethodTestIT extends AbstractTestNGSpringContextTests { // e2e tests
 
-    private CoachEventRepository eventRepository = mock(CoachEventRepository.class); // this class will be mocked
-    private CoachRepository coachRepository = spy(CoachRepository.class); // this class WON'T be mocked
+    @Autowired
+    private WebApplicationContext wac;
+
+    private MockMvc mvc;
 
     @BeforeClass
     public void setup() {
-        doNothing().when(eventRepository).create(any(Coach.class));
+        mvc = MockMvcBuilders.webAppContextSetup(wac).build();
     }
 
     @Test(dataProvider = "provideUriAndResponse")
-    public void testCreateCoach(String uri, String json, String response, HttpStatus status) {
+    public void testCreateCoach(String uri, String json, String response, HttpStatus status) throws Exception {
         // given
         SoftAssert sa = new SoftAssert();
+        RequestBuilder request = MockMvcRequestBuilders
+                .post(uri)
+                .contentType(APPLICATION_JSON)
+                .content(json);
 
         // when
-        MockMvcResponse result = given()
-                .standaloneSetup(new CoachController(new CoachService(coachRepository, eventRepository)))
-                .header("Content-Type", "application/json")
-                .body(json)
-                .when()
-                .post(uri);
+        MvcResult result = mvc.perform(request).andReturn();
 
         // then
-        sa.assertEquals(result.getBody().asString(), response);
-        sa.assertEquals(result.statusCode(), status.value());
+        sa.assertEquals(result.getResponse().getContentAsString(), response);
+        sa.assertEquals(result.getResponse().getStatus(), status.value());
         sa.assertAll();
     }
 
@@ -51,11 +54,11 @@ public class PostMethodTestIT {
     public Object[][] provideUriAndResponse() {
         return new Object[][] {
                 {"/coaches", "{ \"name\": \"Alfons\", \"level\": 10 }",
-                        "A coach was added to the database!", OK},
-                // {"/coaches", "{ \"name\": \"Alfons\", \"level\": 10 }",
-                        // "This coach was already created!", HttpStatus.BAD_REQUEST},
+                        "Coach Alfons was added to the database!", CREATED},
+                {"/coaches", "{ \"name\": \"Alfons\", \"level\": 12 }",
+                        "Coach Alfons was added to the database!", CREATED},
                 {"/coaches", "{ \"name\": \"Alfonso\", \"level\": 5 }",
-                        "A coach was added to the database!", OK}
+                        "Coach Alfonso was added to the database!", CREATED}
         };
     }
 }

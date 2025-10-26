@@ -18,64 +18,61 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
 @RestController
 @RequestMapping("coaches")
 @RequiredArgsConstructor
-class CoachController {
+public class CoachController {
 
     private final CoachService coachService;
 
     @GetMapping
-    ResponseEntity<List<Coach>> getCoaches() {
+    public ResponseEntity<List<GetCoachDto>> getCoaches() {
         List<Coach> coaches = coachService.findAll();
-        return new ResponseEntity<>(coaches, OK);
+        List<GetCoachDto> coachesDto = GetCoachDto.entityToDto(coaches);
+        return new ResponseEntity<>(coachesDto, OK);
     }
 
     @GetMapping("{id}")
-    ResponseEntity<GetCoachDto> getCoach(@PathVariable Long id) {
-        Optional<Coach> coach = coachService.find(id);
-        if (coach.isEmpty()) return new ResponseEntity<>(NOT_FOUND);
-        return new ResponseEntity<>(GetCoachDto.entityToDto(coach.get()), OK);
+    public ResponseEntity<GetCoachDto> getCoach(@PathVariable Long id) {
+        return coachService.find(id)
+                .map(coach -> new ResponseEntity<>(GetCoachDto.entityToDto(coach), OK))
+                .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
     }
 
     @GetMapping("{id}/swimmers")
-    ResponseEntity<String> getCoachSwimmers(@PathVariable Long id) {
+    public ResponseEntity<String> getCoachSwimmers(@PathVariable Long id) {
         return coachService.getCoachSwimmers(id);
     }
 
     @PostMapping
-    ResponseEntity<String> createCoach(@RequestBody PostCoachDto coachDto) {
+    public ResponseEntity<String> createCoach(@RequestBody PostCoachDto coachDto) {
         Coach coach = PostCoachDto.dtoToEntity(coachDto);
-        List<Coach> coaches = coachService.findAll();
-        if (coaches.contains(coach)) return new ResponseEntity<>("This coach was already created!", BAD_REQUEST);
-        coachService.create(coach);
-        return new ResponseEntity<>("A coach was added to the database!", OK);
+        Coach savedCoach = coachService.save(coach);
+        return new ResponseEntity<>("Coach %s was added to the database!".formatted(savedCoach.getName()), CREATED);
     }
 
     @PutMapping("{id}")
-    ResponseEntity<String> changeCoachLevel(@PathVariable Long id,
-                                            @RequestParam int level) {
-        Optional<Coach> coach = coachService.find(id);
-        if (coach.isEmpty()) return new ResponseEntity<>("This coach does not exist", NOT_FOUND);
-        coach.get().updateCoachLevel(level);
-        coachService.create(coach.get());
-        return new ResponseEntity<>("A coach level was updated!", OK);
+    public ResponseEntity<String> updateLevel(@PathVariable Long id, @RequestParam int level) {
+        Coach updatedCoach = coachService.updateLevel(id, level);
+        return updatedCoach != null
+                ? new ResponseEntity<>("A coach level was updated to %d!".formatted(updatedCoach.getLevel()), CREATED)
+                : new ResponseEntity<>("This coach does not exist!", NO_CONTENT);
     }
 
     @DeleteMapping("{id}")
     @PreAuthorize("hasAuthority('admin')")
-    ResponseEntity<String> deleteCoach(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<String> deleteCoach(@PathVariable Long id, Authentication authentication) {
         log.info("User authorities: {}", authentication.getAuthorities());
-        Optional<Coach> coach = coachService.find(id);
-        if (coach.isEmpty()) return new ResponseEntity<>("This coach does not exist!", NOT_FOUND);
-        coachService.delete(coach.get());
-        return new ResponseEntity<>("This coach was successfully deleted!", OK);
+        ResponseEntity<String> response = coachService.delete(id);
+        return response != null
+                ? new ResponseEntity<>("This coach was successfully deleted! %s".formatted(response.getBody()), OK)
+                : new ResponseEntity<>("This coach does not exist!", NOT_FOUND);
     }
 }

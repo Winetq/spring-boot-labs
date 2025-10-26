@@ -1,6 +1,5 @@
-package aui.coach.event;
+package aui.coach;
 
-import aui.coach.Coach;
 import aui.coach.config.AccessTokenRetriever;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,15 +20,15 @@ public class CoachEventRepository {
     private final AccessTokenRetriever accessTokenRetriever;
 
     @Autowired
-    public CoachEventRepository(@Value("${lab3.swimmer.url}") String baseUrl, AccessTokenRetriever accessTokenRetriever) {
+    public CoachEventRepository(@Value("${swimmer.service.url}") String baseUrl, AccessTokenRetriever accessTokenRetriever) {
         this.restTemplate = new RestTemplateBuilder().rootUri(baseUrl).build();
         this.accessTokenRetriever = accessTokenRetriever;
     }
 
-    public void delete(Coach coach) {
+    public ResponseEntity<String> delete(Coach coach) {
         HttpHeaders authHeader = createAuthHeader();
         HttpEntity<Void> request = new HttpEntity<>(authHeader);
-        restTemplate.exchange("/coaches/{id}", DELETE, request, Void.class, coach.getId());
+        return restTemplate.exchange("/coaches/{id}", DELETE, request, String.class, coach.getId());
     }
 
     public ResponseEntity<String> getCoachSwimmers(Long id) {

@@ -1,4 +1,4 @@
-package aui.coach.config;
+package aui.config;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
