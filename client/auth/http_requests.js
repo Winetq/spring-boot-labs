@@ -228,6 +228,8 @@ export async function deleteEntity(urlToDelete, urlToFetch, displayEntities) {
     try {
         const response = await authenticatedDelete(urlToDelete);
         if (response?.ok) {
+            const successfulMessage = await response.text();
+            alert(successfulMessage);
             await fetchEntities(urlToFetch, displayEntities);
         } else if (response?.status === 403) {
             console.warn('Access denied - insufficient permissions to delete the entity');

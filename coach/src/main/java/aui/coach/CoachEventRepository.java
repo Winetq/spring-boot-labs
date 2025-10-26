@@ -1,6 +1,6 @@
 package aui.coach;
 
-import aui.coach.config.AccessTokenRetriever;
+import aui.config.AccessTokenRetriever;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;

@@ -33,10 +33,9 @@ public class CoachController {
     private final CoachService coachService;
 
     @GetMapping
-    public ResponseEntity<List<GetCoachDto>> getCoaches() {
+    public ResponseEntity<List<Coach>> getCoaches() {
         List<Coach> coaches = coachService.findAll();
-        List<GetCoachDto> coachesDto = GetCoachDto.entityToDto(coaches);
-        return new ResponseEntity<>(coachesDto, OK);
+        return new ResponseEntity<>(coaches, OK);
     }
 
     @GetMapping("{id}")

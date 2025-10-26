@@ -9,7 +9,7 @@ window.addEventListener('load', async () => {
                 event =>
                     createEntity(
                         event,
-                        getBackendUrl() + '/swimmers/with_coach',
+                        getBackendUrl() + '/swimmers',
                         buildSwimmerRequest(),
                         '/coach_view/coach_view.html?coach=' + getParameterById('coach')
                     )

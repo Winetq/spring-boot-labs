@@ -1,6 +1,5 @@
 package aui.swimmer;
 
-import aui.swimmer.dto.GetSwimmerDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +24,9 @@ public class CoachController {
     private final SwimmerService swimmerService;
 
     @GetMapping("{coachId}/swimmers")
-    public ResponseEntity<List<GetSwimmerDto>> getCoachSwimmers(@PathVariable Long coachId) {
+    public ResponseEntity<List<Swimmer>> getCoachSwimmers(@PathVariable Long coachId) {
         List<Swimmer> swimmers = swimmerService.findByCoachId(coachId);
-        List<GetSwimmerDto> swimmersDto = GetSwimmerDto.entityToDto(swimmers);
-        return new ResponseEntity<>(swimmersDto, OK);
+        return new ResponseEntity<>(swimmers, OK);
     }
 
     @DeleteMapping("{coachId}")
