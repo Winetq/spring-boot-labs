@@ -9,13 +9,24 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.Collections;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.OPTIONS;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 
 @SpringBootApplication
 public class SpringBootLabsApplication {
 
-	public static void main(String[] args) {
+    private static final String ALLOW_ALL = "*";
+    private static final String GATEWAY_HOST = "localhost:8080";
+    private static final String COACH_HOST = "http://coach:8081";
+    private static final String SWIMMER_HOST = "http://swimmer:8082";
+    private static final String CLIENT_HOST = "http://localhost:8083";
+
+    public static void main(String[] args) {
 		SpringApplication.run(SpringBootLabsApplication.class, args);
 	}
 
@@ -23,16 +34,16 @@ public class SpringBootLabsApplication {
 	public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
 		return builder
 				.routes()
-				.route("coaches", r -> r
-						.host("localhost:8080")
+				.route("coach", r -> r
+						.host(GATEWAY_HOST)
 						.and()
 						.path("/coaches/**", "/coaches")
-						.uri("http://coaches:8081"))
-				.route("swimmers", r -> r
-						.host("localhost:8080")
+						.uri(COACH_HOST))
+				.route("swimmer", r -> r
+						.host(GATEWAY_HOST)
 						.and()
 						.path("/swimmers/**", "/swimmers")
-						.uri("http://swimmers:8082"))
+						.uri(SWIMMER_HOST))
 				.build();
 	}
 
@@ -40,10 +51,10 @@ public class SpringBootLabsApplication {
 	public CorsWebFilter corsWebFilter() {
 
 		final CorsConfiguration corsConfig = new CorsConfiguration();
-		corsConfig.setAllowedOrigins(Collections.singletonList("*"));
+		corsConfig.setAllowedOrigins(singletonList(CLIENT_HOST));
 		corsConfig.setMaxAge(3600L);
-		corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PUT"));
-		corsConfig.addAllowedHeader("*");
+		corsConfig.setAllowedMethods(asList(GET.name(), POST.name(), DELETE.name(), PUT.name(), OPTIONS.name()));
+		corsConfig.addAllowedHeader(ALLOW_ALL);
 
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", corsConfig);
@@ -51,4 +62,3 @@ public class SpringBootLabsApplication {
 		return new CorsWebFilter(source);
 	}
 }
-

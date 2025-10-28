@@ -1,42 +1,36 @@
 package aui.coach;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Component
-@NoArgsConstructor
-@EqualsAndHashCode
+import static javax.persistence.GenerationType.IDENTITY;
+
 @Entity
 @Table(name = "coaches")
 @Getter
+@NoArgsConstructor
 public class Coach {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Exclude
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    @Column(name = "coach_name")
+    @Column
     private String name;
 
-    @Column(name = "coach_level")
+    @Setter
+    @Column
     private int level;
 
     public Coach(String name, int level) {
         this.name = name;
         this.level = level;
     }
-
-    public void updateCoachLevel(int level) {
-        this.level = level;
-    }
 }
-

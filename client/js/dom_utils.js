@@ -68,7 +68,7 @@ export function createTextCell(text) {
 /**
  * Returns value for query param.
  *
- * @param {string} coach name of the query param
+ * @param {string} id name of the query param
  * @returns {string} query param value
  */
 export function getParameterById(id) {

@@ -1,75 +1,81 @@
-version: "3.3"
-
 services:
 
-  coaches:
-    image: mcwynar/spring-boot-labs:lab3_coach
-    container_name: coaches
+  coach:
+    build:
+      context: ../coach
+      dockerfile: Dockerfile
+    container_name: coach
     restart: always
     depends_on:
-      - postgres-coaches-db
+      - postgres-coach-db
     ports:
       - "8081:8081"
     networks:
       - net
 
-  postgres-coaches-db:
-    container_name: postgres-coaches-db
-    image: postgres:latest
+  postgres-coach-db:
+    image: postgres
+    container_name: postgres-coach-db
     restart: always
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: coaches_db
+      POSTGRES_DB: coach_db
     networks:
       - net
 
-  swimmers:
-    image: mcwynar/spring-boot-labs:lab3_swimmer
-    container_name: swimmers
+  swimmer:
+    build:
+      context: ../swimmer
+      dockerfile: Dockerfile
+    container_name: swimmer
     restart: always
     depends_on:
-      - coaches
-      - postgres-swimmers-db
+      - coach
+      - postgres-swimmer-db
     ports:
       - "8082:8082"
     networks:
       - net
 
-  postgres-swimmers-db:
-    container_name: postgres-swimmers-db
-    image: postgres:latest
+  postgres-swimmer-db:
+    image: postgres
+    container_name: postgres-swimmer-db
     restart: always
     ports:
       - "5434:5432"
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: swimmers_db
+      POSTGRES_DB: swimmer_db
     networks:
       - net
 
   gateway:
-    image: mcwynar/spring-boot-labs:lab3_gateway
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
     container_name: gateway
     restart: always
     depends_on:
-      - coaches
-      - swimmers
+      - coach
+      - swimmer
     ports:
       - "8080:8080"
     networks:
       - net
 
   frontend:
-    image: mcwynar/spring-boot-labs:lab4_js
+    build:
+      context: ../client
+      dockerfile: Dockerfile
     container_name: frontend
     restart: always
     depends_on:
-      - coaches
-      - swimmers
+      - coach
+      - swimmer
       - gateway
     ports:
       - "8083:80"

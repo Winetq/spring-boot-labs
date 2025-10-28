@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres-swimmer-db:5432/swimmer_db
+    driverClassName: org.postgresql.Driver
+    username: admin
+    password: admin
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://integrator-7447834.okta.com/oauth2/default
+
+server:
+  port: 8082

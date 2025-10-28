@@ -1,31 +1,28 @@
 import {getParameterById} from '../js/dom_utils.js';
 import {getBackendUrl} from '../js/configuration.js';
+import {requireAuth, createEntity} from '../auth/http_requests.js';
 
-window.addEventListener('load', () => {
-    const infoForm = document.getElementById('infoForm');
-
-    infoForm.addEventListener('submit', event => createSwimmerAction(event));
+window.addEventListener('load', async () => {
+    if (await requireAuth()) {
+        const createSwimmerForm = document.getElementById('createSwimmerForm');
+        createSwimmerForm.addEventListener('submit',
+                event =>
+                    createEntity(
+                        event,
+                        getBackendUrl() + '/swimmers',
+                        buildSwimmerRequest(),
+                        '/coach_view/coach_view.html?coach=' + getParameterById('coach')
+                    )
+        );
+    }
 });
 
-/**
- * Action event handled for creating swimmer.
- *
- * @param {Event} event dom event
- */
-function createSwimmerAction(event) {
-    event.preventDefault();
-    
-    if (document.getElementById('name').value !== "" && document.getElementById('specialization').value !==  "") {
-        const xhttp = new XMLHttpRequest();
-        xhttp.open("POST", getBackendUrl() + '/swimmers/with_coach', false); // a synchronous request
-        let coach_id = getParameterById('coach');
-        const request = {
-            'coach_id': coach_id,
-            'name': document.getElementById('name').value,
-            'specialization': document.getElementById('specialization').value
-        };
-        xhttp.setRequestHeader('Content-Type', 'application/json');
-        xhttp.send(JSON.stringify(request)); // JSON.parse()
-        alert("Let's see the results!");
-    }
+function buildSwimmerRequest() {
+    const nameValue = document.getElementById('name')?.value.trim() || '';
+    const specializationValue = document.getElementById('specialization')?.value.trim() || '';
+    return {
+        coachId: getParameterById('coach'),
+        name: nameValue === '' ? 'testName' : nameValue,
+        specialization: specializationValue === '' ? 'FREESTYLE' : specializationValue
+    };
 }

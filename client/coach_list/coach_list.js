@@ -1,23 +1,12 @@
 import {clearElementChildren, createLinkCell, createButtonCell, createTextCell} from '../js/dom_utils.js';
 import {getBackendUrl} from '../js/configuration.js';
+import {requireAuth, fetchEntities, deleteEntity} from '../auth/http_requests.js';
 
-window.addEventListener('load', () => {
-    fetchAndDisplayCoaches();
+window.addEventListener('load', async () => {
+    if (await requireAuth()) {
+        await fetchEntities(getBackendUrl() + '/coaches', displayCoaches);
+    }
 });
-
-/**
- * Fetches all coaches and modifies the DOM tree in order to display them.
- */
-function fetchAndDisplayCoaches() {
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            displayCoaches(JSON.parse(this.responseText));
-        }
-    };
-    xhttp.open("GET", getBackendUrl() + '/coaches', true);
-    xhttp.send();
-}
 
 /**
  * Updates the DOM tree in order to display coaches.
@@ -43,22 +32,13 @@ function createTableRow(coach) {
     tr.appendChild(createTextCell(coach.name));
     tr.appendChild(createLinkCell('view', '../coach_view/coach_view.html?coach=' + coach.id));
     tr.appendChild(createLinkCell('edit', '../coach_edit/coach_edit.html?coach=' + coach.id));
-    tr.appendChild(createButtonCell('delete', () => deleteCoach(coach)));
+    tr.appendChild(createButtonCell('delete', () =>
+            deleteEntity(
+                getBackendUrl() + '/coaches/' + coach.id,
+                getBackendUrl() + '/coaches',
+                displayCoaches
+            )
+        )
+    );
     return tr;
-}
-
-/**
- * Deletes entity from backend and reloads table.
- *
- * @param {string} coach to be deleted
- */
-function deleteCoach(coach) {
-    const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 202) {
-            fetchAndDisplayCoaches();
-        }
-    };
-    xhttp.open("DELETE", getBackendUrl() + '/coaches/' + coach.id, true);
-    xhttp.send();
 }
