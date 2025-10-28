@@ -1,0 +1,44 @@
+import {clearElementChildren, createLinkCell, createButtonCell, createTextCell} from '../js/dom_utils.js';
+import {getBackendUrl} from '../js/configuration.js';
+import {requireAuth, fetchEntities, deleteEntity} from '../auth/http_requests.js';
+
+window.addEventListener('load', async () => {
+    if (await requireAuth()) {
+        await fetchEntities(getBackendUrl() + '/coaches', displayCoaches);
+    }
+});
+
+/**
+ * Updates the DOM tree in order to display coaches.
+ *
+ * @param {{coaches: string[]}} coaches
+ */
+function displayCoaches(coaches) {
+    let tableBody = document.getElementById('tableBody');
+    clearElementChildren(tableBody);
+    coaches.forEach(coach => {
+        tableBody.appendChild(createTableRow(coach));
+    })
+}
+
+/**
+ * Creates single table row for entity.
+ *
+ * @param {string} coach
+ * @returns {HTMLTableRowElement}
+ */
+function createTableRow(coach) {
+    let tr = document.createElement('tr');
+    tr.appendChild(createTextCell(coach.name));
+    tr.appendChild(createLinkCell('view', '../coach_view/coach_view.html?coach=' + coach.id));
+    tr.appendChild(createLinkCell('edit', '../coach_edit/coach_edit.html?coach=' + coach.id));
+    tr.appendChild(createButtonCell('delete', () =>
+            deleteEntity(
+                getBackendUrl() + '/coaches/' + coach.id,
+                getBackendUrl() + '/coaches',
+                displayCoaches
+            )
+        )
+    );
+    return tr;
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="author" content="Michał Cwynar"/>
+        <title>Simple App</title>
+        <link rel="stylesheet" href="styles.css"/>
+        <script src="https://global.oktacdn.com/okta-auth-js/6.1.0/okta-auth-js.min.js"></script>
+        <script type="module" src="auth/auth.js" defer="defer"></script>
+    </head>
+    <body>
+        <div class="container">
+            <header class="header">
+                <h1>Simple App</h1>
+            </header>
+
+            <nav class="navigation-bar">
+                <ul>
+                    <li><a href="index.html">main</a></li>
+                    <li class="hidden" id="coaches-nav"><a href="coach_list/coach_list.html">coaches</a></li>
+                </ul>
+            </nav>
+
+            <section class="main-section">
+                <article class="text--justified">
+                    <form id="signinForm">
+                        <label for="username">Username:</label>
+                        <input class="ui-control ui-input" type="email" id="username" name="username"/>
+
+                        <label for="password">Password:</label>
+                        <input class="ui-control ui-input" type="password"  id="password" name="password"/>
+
+                        <input class="ui-control ui-button" type="submit" value="Sign in" name="Signin"/>
+                    </form>
+                </article>
+            </section>
+
+            <footer class="footer">
+                <p>Copyright &copy; 2021, Michał Cwynar</p>
+            </footer>
+        </div>
+    </body>
+</html>
