@@ -7,6 +7,7 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 import static org.springframework.http.HttpMethod.OPTIONS;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebFluxSecurity // since Spring Cloud Gateway is built on Spring WebFlux (reactive)
@@ -19,7 +20,9 @@ public class SecurityConfig {
                         .pathMatchers(OPTIONS, "/**").permitAll() // allow CORS preflight requests
                         .anyExchange().authenticated()
                 )
-                .oauth2ResourceServer(ServerHttpSecurity.OAuth2ResourceServerSpec::jwt)
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(withDefaults())
+                )
                 .csrf(ServerHttpSecurity.CsrfSpec::disable);
         return http.build();
     }
