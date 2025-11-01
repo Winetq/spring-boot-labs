@@ -2,6 +2,7 @@ package aui.coach;
 
 import aui.coach.dto.GetCoachDto;
 import aui.coach.dto.PostCoachDto;
+import aui.rabbitmq.GetCoachSwimmersResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -46,8 +47,11 @@ public class CoachController {
     }
 
     @GetMapping("{id}/swimmers")
-    public ResponseEntity<String> getCoachSwimmers(@PathVariable Long id) {
-        return coachService.getCoachSwimmers(id);
+    public ResponseEntity<List<GetCoachSwimmersResponse>> getCoachSwimmers(@PathVariable Long id) {
+        List<GetCoachSwimmersResponse> coachSwimmers = coachService.getCoachSwimmers(id);
+        return coachSwimmers != null
+                ? new ResponseEntity<>(coachSwimmers, OK)
+                : new ResponseEntity<>(NOT_FOUND);
     }
 
     @PostMapping
@@ -69,9 +73,8 @@ public class CoachController {
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<String> deleteCoach(@PathVariable Long id, Authentication authentication) {
         log.info("User authorities: {}", authentication.getAuthorities());
-        ResponseEntity<String> response = coachService.delete(id);
-        return response != null
-                ? new ResponseEntity<>("This coach was successfully deleted! %s".formatted(response.getBody()), OK)
+        return coachService.delete(id)
+                ? new ResponseEntity<>("This coach was successfully deleted!", OK)
                 : new ResponseEntity<>("This coach does not exist!", NOT_FOUND);
     }
 }
