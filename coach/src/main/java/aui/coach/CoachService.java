@@ -1,20 +1,19 @@
 package aui.coach;
 
+import aui.rabbitmq.CoachPublisher;
+import aui.rabbitmq.GetCoachSwimmersResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
 public class CoachService {
 
     private final CoachRepository coachRepository;
-    private final CoachEventRepository eventRepository;
+    private final CoachPublisher coachPublisher;
 
     public Optional<Coach> find(Long id) {
         return coachRepository.findById(id);
@@ -37,18 +36,19 @@ public class CoachService {
                 .orElse(null);
     }
 
-    public ResponseEntity<String> delete(Long id) {
+    public boolean delete(Long id) {
         return find(id)
                 .map(coach -> {
                     coachRepository.delete(coach);
-                    return eventRepository.delete(coach);
+                    coachPublisher.publishDeleteCoachEvent(coach.getId());
+                    return true;
                 })
-                .orElse(null);
+                .orElse(false);
     }
 
-    public ResponseEntity<String> getCoachSwimmers(Long id) {
+    public List<GetCoachSwimmersResponse> getCoachSwimmers(Long id) {
         return find(id)
-                .map(coach -> eventRepository.getCoachSwimmers(id))
-                .orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
+                .map(coach -> coachPublisher.publishGetCoachSwimmersRequest(id))
+                .orElse(null);
     }
 }

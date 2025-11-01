@@ -5,24 +5,30 @@ services:
       context: ../coach
       dockerfile: Dockerfile
     container_name: coach
-    restart: always
     depends_on:
       - postgres-coach-db
     ports:
       - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_HOST: postgres-coach-db
+      POSTGRES_DATABASE: coach_db
+      POSTGRES_PORT: 5432
+      RABBIT_USER: guest
+      RABBIT_PASSWORD: guest
+      RABBIT_HOST: rabbitmq
+      RABBIT_PORT: 5672
     networks:
       - net
 
   postgres-coach-db:
     image: postgres
     container_name: postgres-coach-db
-    restart: always
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: coach_db
     networks:
       - net
 
@@ -31,25 +37,30 @@ services:
       context: ../swimmer
       dockerfile: Dockerfile
     container_name: swimmer
-    restart: always
     depends_on:
-      - coach
       - postgres-swimmer-db
     ports:
       - "8082:8082"
+    environment:
+      SERVER_PORT: 8082
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_HOST: postgres-swimmer-db
+      POSTGRES_DATABASE: swimmer_db
+      POSTGRES_PORT: 5432
+      RABBIT_USER: guest
+      RABBIT_PASSWORD: guest
+      RABBIT_HOST: rabbitmq
+      RABBIT_PORT: 5672
     networks:
       - net
 
   postgres-swimmer-db:
     image: postgres
     container_name: postgres-swimmer-db
-    restart: always
-    ports:
-      - "5434:5432"
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: swimmer_db
     networks:
       - net
 
@@ -58,12 +69,13 @@ services:
       context: ../gateway
       dockerfile: Dockerfile
     container_name: gateway
-    restart: always
     depends_on:
       - coach
       - swimmer
     ports:
       - "8080:8080"
+    environment:
+      SERVER_PORT: 8080
     networks:
       - net
 
@@ -72,13 +84,19 @@ services:
       context: ../client
       dockerfile: Dockerfile
     container_name: frontend
-    restart: always
     depends_on:
-      - coach
-      - swimmer
       - gateway
     ports:
       - "8083:80"
+    networks:
+      - net
+
+  rabbitmq:
+    image: rabbitmq:4.2.0-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - net
 

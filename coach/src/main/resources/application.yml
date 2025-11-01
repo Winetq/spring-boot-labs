@@ -1,14 +1,22 @@
 spring:
   datasource:
-    url: jdbc:postgresql://postgres-coach-db:5432/coach_db
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
     driver-class-name: org.postgresql.Driver
-    username: admin
-    password: admin
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     generate-ddl: true
     hibernate:
       ddl-auto: create-drop
     open-in-view: false
+  rabbitmq:
+    host: ${RABBIT_HOST}
+    port: ${RABBIT_PORT}
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASSWORD}
+    queue:
+      delete-coach-queue: delete.coach.queue
+      get-coach-swimmers-queue: get.coach.swimmers.queue
   security:
     oauth2:
       resourceserver:
@@ -16,8 +24,4 @@ spring:
           issuer-uri: https://integrator-7447834.okta.com/oauth2/default
 
 server:
-  port: 8081
-
-swimmer:
-  service:
-    url: http://swimmer:8082
+  port: ${SERVER_PORT}
