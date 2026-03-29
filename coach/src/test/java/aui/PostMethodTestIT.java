@@ -25,6 +25,7 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -71,6 +72,24 @@ public class PostMethodTestIT extends IntegrationTestConfiguration {
     }
 
     @Test(dependsOnMethods = "testCreateCoach")
+    public void testDeleteCoachWithoutAdminRole() throws Exception {
+        // given
+        long coachId = 1L;
+        RequestBuilder request = MockMvcRequestBuilders
+                .delete("/coaches/" + coachId)
+                .with(jwt().authorities(() -> "user"));
+
+        // when
+        MvcResult result = mvc.perform(request).andReturn();
+
+        // then
+        SoftAssert sa = new SoftAssert();
+        sa.assertEquals(result.getResponse().getStatus(), FORBIDDEN.value());
+        sa.assertEquals(coachService.findAll().size(), 3, "No coach should have been deleted");
+        sa.assertAll();
+    }
+
+    @Test(dependsOnMethods = "testDeleteCoachWithoutAdminRole")
     public void testDeleteCoach() throws Exception {
         // given
         long coachId = 2L;
