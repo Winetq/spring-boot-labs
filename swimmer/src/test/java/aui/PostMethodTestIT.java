@@ -73,12 +73,9 @@ public class PostMethodTestIT extends IntegrationTestConfiguration {
         );
 
         // then
-        List<String> names = newSwimmers.stream().map(Swimmer::getName).toList();
-
         SoftAssert sa = new SoftAssert();
         sa.assertEquals(newSwimmers.size(), 4);
-        sa.assertTrue(names.stream().allMatch(name -> name.equals("Jacob") || name.equals("Michael")),
-                "All swimmers should be named Jacob or Michael, but got: " + names);
+        sa.assertTrue(newSwimmers.stream().allMatch(swimmer -> swimmer.getCoachId() == coachId));
         sa.assertAll();
     }
 
@@ -87,12 +84,12 @@ public class PostMethodTestIT extends IntegrationTestConfiguration {
         return new Object[][] {
                 {"/swimmers", "{ \"name\": \"Michael\", \"coachId\": \"4\", \"specialization\": \"BUTTERFLY\" }",
                         "Swimmer Michael was added to the database!", CREATED},
-                {"/swimmers", "{ \"name\": \"Michael\", \"coachId\": \"4\", \"specialization\": \"FREESTYLE\" }",
-                        "Swimmer Michael was added to the database!", CREATED},
+                {"/swimmers", "{ \"name\": \"Alfred\", \"coachId\": \"4\", \"specialization\": \"FREESTYLE\" }",
+                        "Swimmer Alfred was added to the database!", CREATED},
                 {"/swimmers", "{ \"name\": \"Jacob\", \"coachId\": \"4\", \"specialization\": \"BACKSTROKE\" }",
                         "Swimmer Jacob was added to the database!", CREATED},
-                {"/swimmers", "{ \"name\": \"Jacob\", \"coachId\": \"4\", \"specialization\": \"BREASTSTROKE\" }",
-                        "Swimmer Jacob was added to the database!", CREATED}
+                {"/swimmers", "{ \"name\": \"Stephan\", \"coachId\": \"4\", \"specialization\": \"BREASTSTROKE\" }",
+                        "Swimmer Stephan was added to the database!", CREATED}
         };
     }
 }
