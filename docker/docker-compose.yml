@@ -29,6 +29,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
+      POSTGRES_DB: coach_db
     networks:
       - net
 
@@ -61,6 +62,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
+      POSTGRES_DB: swimmer_db
     networks:
       - net
 

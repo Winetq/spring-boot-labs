@@ -1,5 +1,6 @@
 package aui.swimmer;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,6 +19,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Table(name = "swimmers")
 @Getter
 @NoArgsConstructor
+@EqualsAndHashCode
 public class Swimmer {
 
     @Id

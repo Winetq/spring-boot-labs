@@ -1,6 +1,6 @@
 const oktaAuth = new OktaAuth({
-    issuer: 'https://integrator-7447834.okta.com/oauth2/default',
-    clientId: '0oaw3nzfn0RvOt7cc697',
+    issuer: 'https://integrator-5997569.okta.com/oauth2/default',
+    clientId: '0oa10vrfi7gA8YsIZ698',
     redirectUri: window.location.origin + '/index.html',
     scopes: ['openid', 'profile', 'email', `offline_access`],
     responseType: ['code'],
