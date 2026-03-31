@@ -1,4 +1,4 @@
-FROM maven:3.9.11-eclipse-temurin-21 AS compile
+FROM maven:3.9.14-eclipse-temurin-21 AS compile
 
 COPY pom.xml pom.xml
 COPY src src
