@@ -16,3 +16,7 @@ target/
 ### npm install files ###
 package-lock.json
 node_modules/
+
+### cdk ###
+infrastructure/cdk.context.json
+infrastructure/cdk.out/

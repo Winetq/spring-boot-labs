@@ -56,7 +56,7 @@ class SecurityGroupConstruct(
                     SecurityGroupRule(
                         peer = Peer.ipv4(ALLOWED_INGRESS_CIDR),
                         port = Port.tcp(SSH_PORT),
-                        description = "Allow SSH access",
+                        description = "Allow SSH access", // it enables EC2 Instance Connect
                     ),
                 ),
             )

@@ -97,7 +97,7 @@ class Ec2InstanceConstruct(
                 "yum update -y",
                 "yum install -y docker",
                 "systemctl enable --now docker",
-                "docker run -d --restart always --name $containerName -p $port:$port $envArgs $image",
+                "docker run -d --restart on-failure:3 --name $containerName -p $port:$port $envArgs $image",
             )
             return userData
         }
