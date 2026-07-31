@@ -7,13 +7,15 @@ spring:
   jpa:
     generate-ddl: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     open-in-view: false
   rabbitmq:
     host: ${RABBIT_HOST}
     port: ${RABBIT_PORT}
     username: ${RABBIT_USER}
     password: ${RABBIT_PASSWORD}
+    ssl:
+      enabled: ${RABBIT_SSL_ENABLED:false}
     queue:
       delete-coach-queue: delete.coach.queue
       get-coach-swimmers-queue: get.coach.swimmers.queue
