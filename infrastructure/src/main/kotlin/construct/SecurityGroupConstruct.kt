@@ -2,12 +2,15 @@ package aui.construct
 
 import aui.constants.InfrastructureConstants.ALLOWED_INGRESS_CIDR
 import aui.constants.InfrastructureConstants.COACH_PORT
+import aui.constants.InfrastructureConstants.MQ_PORT
 import aui.constants.InfrastructureConstants.NAME_TAG_KEY
+import aui.constants.InfrastructureConstants.POSTGRES_PORT
 import aui.constants.InfrastructureConstants.SSH_PORT
 import aui.constants.InfrastructureConstants.SWIMMER_PORT
 import aui.properties.SecurityGroupProperties
 import aui.properties.SecurityGroupProperties.SecurityGroupRule
 import software.amazon.awscdk.Tags
+import software.amazon.awscdk.services.ec2.ISecurityGroup
 import software.amazon.awscdk.services.ec2.IVpc
 import software.amazon.awscdk.services.ec2.Peer
 import software.amazon.awscdk.services.ec2.Port
@@ -57,6 +60,41 @@ class SecurityGroupConstruct(
                         peer = Peer.ipv4(ALLOWED_INGRESS_CIDR),
                         port = Port.tcp(SSH_PORT),
                         description = "Allow SSH access", // it enables EC2 Instance Connect
+                    ),
+                ),
+            )
+
+        fun createRdsSecurityGroupProperties(
+            vpc: IVpc,
+            ec2SecurityGroup: ISecurityGroup,
+        ): SecurityGroupProperties =
+            SecurityGroupProperties(
+                name = "spring-boot-labs-rds-sg",
+                description = "Security group for the RDS PostgreSQL instance",
+                vpc = vpc,
+                inboundRules = listOf(
+                    // ISecurityGroup is an IPeer, so the EC2 SG becomes a source-SG ingress rule.
+                    SecurityGroupRule(
+                        peer = ec2SecurityGroup,
+                        port = Port.tcp(POSTGRES_PORT),
+                        description = "Allow PostgreSQL access from the EC2 instances",
+                    ),
+                ),
+            )
+
+        fun createMqSecurityGroupProperties(
+            vpc: IVpc,
+            ec2SecurityGroup: ISecurityGroup,
+        ): SecurityGroupProperties =
+            SecurityGroupProperties(
+                name = "spring-boot-labs-mq-sg",
+                description = "Security group for the Amazon MQ RabbitMQ broker",
+                vpc = vpc,
+                inboundRules = listOf(
+                    SecurityGroupRule(
+                        peer = ec2SecurityGroup,
+                        port = Port.tcp(MQ_PORT),
+                        description = "Allow AMQPS access from the EC2 instances",
                     ),
                 ),
             )
