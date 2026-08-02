@@ -130,11 +130,11 @@ class Ec2InstanceConstruct(
                 "yum update -y",
                 "yum install -y docker jq postgresql15",
                 "systemctl enable --now docker",
-                // Fetch DB master credentials from Secrets Manager (never baked into the template).
+                // Fetch DB master credentials from Secrets Manager.
                 "DB_SECRET=\$(aws secretsmanager get-secret-value --secret-id $dbSecretArn --query SecretString --output text --region $region)",
                 "DB_USER=\$(echo \$DB_SECRET | jq -r .username)",
                 "DB_PASS=\$(echo \$DB_SECRET | jq -r .password)",
-                "export PGPASSWORD=\$DB_PASS",
+                "export PGPASSWORD=\$DB_PASS", // used by the non-interactive psql calls below
                 // Wait until RDS accepts connections, then create this service's database if missing.
                 "until psql -h $dbHost -U \$DB_USER -d postgres -c '\\q' 2>/dev/null; do echo 'waiting for rds...'; sleep 5; done",
                 "psql -h $dbHost -U \$DB_USER -d postgres -tc \"SELECT 1 FROM pg_database WHERE datname='$databaseName'\" | grep -q 1 || psql -h $dbHost -U \$DB_USER -d postgres -c \"CREATE DATABASE $databaseName\"",

@@ -2,6 +2,7 @@ package aui.construct
 
 import aui.constants.InfrastructureConstants.ALLOWED_INGRESS_CIDR
 import aui.constants.InfrastructureConstants.COACH_PORT
+import aui.constants.InfrastructureConstants.PERSONAL_INGRESS_CIDR
 import aui.constants.InfrastructureConstants.MQ_PORT
 import aui.constants.InfrastructureConstants.NAME_TAG_KEY
 import aui.constants.InfrastructureConstants.POSTGRES_PORT
@@ -78,6 +79,12 @@ class SecurityGroupConstruct(
                         peer = ec2SecurityGroup,
                         port = Port.tcp(POSTGRES_PORT),
                         description = "Allow PostgreSQL access from the EC2 instances",
+                    ),
+                    // Allow connecting directly from the personal IP only (e.g. from DBeaver).
+                    SecurityGroupRule(
+                        peer = Peer.ipv4(PERSONAL_INGRESS_CIDR),
+                        port = Port.tcp(POSTGRES_PORT),
+                        description = "Allow PostgreSQL access from the personal IP",
                     ),
                 ),
             )

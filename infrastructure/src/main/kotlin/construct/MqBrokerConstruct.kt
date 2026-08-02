@@ -24,7 +24,6 @@ class MqBrokerConstruct(
     // Unlike RDS (an L2 construct with the built-in Credentials.fromGeneratedSecret helper),
     // Amazon MQ only ships as the L1 CfnBroker, which has no credential helpers. So we generate
     // the secret ourselves here and feed the username/password into the broker's users list below.
-    // Generated broker credentials stored in Secrets Manager (never in the template).
     val secret: Secret =
         Secret.Builder.create(this, "Credentials")
             .generateSecretString(

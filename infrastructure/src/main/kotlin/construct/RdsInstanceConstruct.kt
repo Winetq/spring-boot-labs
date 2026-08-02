@@ -46,7 +46,9 @@ class RdsInstanceConstruct(
                     .subnetType(PUBLIC)
                     .build()
             )
-            .publiclyAccessible(false)
+            // Publicly accessible so it can be reached from a local client (e.g. DBeaver).
+            // Access is still restricted by the RDS security group to the EC2 SG and the personal IP.
+            .publiclyAccessible(true)
             .securityGroups(listOf(rdsInstanceProperties.securityGroup))
             .allocatedStorage(rdsInstanceProperties.allocatedStorage)
             .credentials(Credentials.fromGeneratedSecret(rdsInstanceProperties.masterUsername))
