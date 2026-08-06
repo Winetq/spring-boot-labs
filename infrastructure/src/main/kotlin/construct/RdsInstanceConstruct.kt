@@ -18,6 +18,7 @@ import software.amazon.awscdk.services.ec2.SubnetType.PUBLIC
 import software.amazon.awscdk.services.rds.Credentials
 import software.amazon.awscdk.services.rds.DatabaseInstance
 import software.amazon.awscdk.services.rds.DatabaseInstanceEngine
+import software.amazon.awscdk.services.rds.DatabaseInstanceReadReplica
 import software.amazon.awscdk.services.rds.PostgresEngineVersion.VER_18_3
 import software.amazon.awscdk.services.rds.PostgresInstanceEngineProps
 import software.amazon.awscdk.services.secretsmanager.ISecret
@@ -52,8 +53,27 @@ class RdsInstanceConstruct(
             .securityGroups(listOf(rdsInstanceProperties.securityGroup))
             .allocatedStorage(rdsInstanceProperties.allocatedStorage)
             .credentials(Credentials.fromGeneratedSecret(rdsInstanceProperties.masterUsername))
-            .backupRetention(Duration.days(0))
+            // At least one day of automated backups is required to create a read replica from this instance.
+            .backupRetention(Duration.days(1))
             .deleteAutomatedBackups(true)
+            .removalPolicy(DESTROY)
+            .build()
+
+    // Read-only replica of the instance above. Gives the app a separate reader endpoint
+    // (a poor man's Aurora reader/writer split) so read-only transactions can be offloaded.
+    val readReplica: DatabaseInstanceReadReplica =
+        DatabaseInstanceReadReplica.Builder.create(this, "ReadReplica")
+            .instanceIdentifier("${rdsInstanceProperties.instanceIdentifier}-replica")
+            .sourceDatabaseInstance(instance)
+            .instanceType(InstanceType.of(BURSTABLE3, MICRO)) // db.t3.micro
+            .vpc(rdsInstanceProperties.vpc)
+            .vpcSubnets(
+                SubnetSelection.builder()
+                    .subnetType(PUBLIC)
+                    .build()
+            )
+            .publiclyAccessible(true)
+            .securityGroups(listOf(rdsInstanceProperties.securityGroup))
             .removalPolicy(DESTROY)
             .build()
 
@@ -63,6 +83,8 @@ class RdsInstanceConstruct(
     }
 
     val endpointAddress: String = instance.dbInstanceEndpointAddress
+
+    val readerEndpointAddress: String = readReplica.dbInstanceEndpointAddress
 
     init {
         Tags.of(this).add(NAME_TAG_KEY, rdsInstanceProperties.instanceIdentifier)

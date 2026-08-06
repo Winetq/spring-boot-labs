@@ -60,6 +60,7 @@ class Ec2InstanceConstruct(
             role: IRole,
             dbSecret: ISecret,
             dbHost: String,
+            dbReadHost: String,
             mqSecret: ISecret,
             mqAmqpEndpoint: String,
             region: String,
@@ -78,6 +79,7 @@ class Ec2InstanceConstruct(
                     databaseName = COACH_DATABASE_NAME,
                     dbSecretArn = dbSecret.secretArn,
                     dbHost = dbHost,
+                    dbReadHost = dbReadHost,
                     mqSecretArn = mqSecret.secretArn,
                     mqAmqpEndpoint = mqAmqpEndpoint,
                     region = region,
@@ -121,10 +123,13 @@ class Ec2InstanceConstruct(
             databaseName: String,
             dbSecretArn: String,
             dbHost: String,
+            dbReadHost: String? = null,
             mqSecretArn: String,
             mqAmqpEndpoint: String,
             region: String,
         ): UserData {
+            // Point reads at the replica when one is wired in; otherwise reuse the writer host.
+            val readHost = dbReadHost ?: dbHost
             val userData = UserData.forLinux()
             userData.addCommands(
                 "yum update -y",
@@ -145,7 +150,7 @@ class Ec2InstanceConstruct(
                 "MQ_HOST=\$(echo '$mqAmqpEndpoint' | sed -e 's|^amqps://||' -e 's|:$MQ_PORT\$||')",
                 "docker run -d --restart on-failure:3 --name $containerName -p $port:$port" +
                     " -e SERVER_PORT=$port" +
-                    " -e POSTGRES_HOST=$dbHost -e POSTGRES_PORT=$POSTGRES_PORT -e POSTGRES_DATABASE=$databaseName" +
+                    " -e POSTGRES_HOST=$dbHost -e POSTGRES_READ_HOST=$readHost -e POSTGRES_PORT=$POSTGRES_PORT -e POSTGRES_DATABASE=$databaseName" +
                     " -e POSTGRES_USER=\$DB_USER -e POSTGRES_PASSWORD=\$DB_PASS" +
                     " -e RABBIT_HOST=\$MQ_HOST -e RABBIT_PORT=$MQ_PORT" +
                     " -e RABBIT_USER=\$MQ_USER -e RABBIT_PASSWORD=\$MQ_PASS -e RABBIT_SSL_ENABLED=true" +
