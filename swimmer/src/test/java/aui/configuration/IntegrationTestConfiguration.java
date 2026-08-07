@@ -20,6 +20,9 @@ public class IntegrationTestConfiguration extends AbstractTestNGSpringContextTes
         registry.add("spring.datasource.url", POSTGRES_CONTAINER::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES_CONTAINER::getUsername);
         registry.add("spring.datasource.password", POSTGRES_CONTAINER::getPassword);
+        registry.add("spring.datasource-replica.url", POSTGRES_CONTAINER::getJdbcUrl);
+        registry.add("spring.datasource-replica.username", POSTGRES_CONTAINER::getUsername);
+        registry.add("spring.datasource-replica.password", POSTGRES_CONTAINER::getPassword);
         registry.add("spring.rabbitmq.host", RABBIT_MQ_CONTAINER::getHost);
         registry.add("spring.rabbitmq.port", RABBIT_MQ_CONTAINER::getAmqpPort);
         registry.add("spring.rabbitmq.username", RABBIT_MQ_CONTAINER::getAdminUsername);

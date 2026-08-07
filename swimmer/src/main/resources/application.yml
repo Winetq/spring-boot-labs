@@ -4,6 +4,12 @@ spring:
     driverClassName: org.postgresql.Driver
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+  # Read replica endpoint. Falls back to the writer host when no replica is configured (local/dev).
+  datasource-replica:
+    url: jdbc:postgresql://${POSTGRES_READ_HOST:${POSTGRES_HOST}}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+    driverClassName: org.postgresql.Driver
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     generate-ddl: true
     hibernate:

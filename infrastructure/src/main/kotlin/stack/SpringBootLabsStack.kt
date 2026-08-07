@@ -105,6 +105,7 @@ class SpringBootLabsStack(
                 role = instanceRole,
                 dbSecret = rds.secret,
                 dbHost = rds.endpointAddress,
+                dbReadHost = rds.readerEndpointAddress,
                 mqSecret = mq.secret,
                 mqAmqpEndpoint = mq.amqpEndpoint,
                 region = region,
