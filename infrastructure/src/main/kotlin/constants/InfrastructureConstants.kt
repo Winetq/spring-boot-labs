@@ -59,11 +59,10 @@ object InfrastructureConstants {
     const val FARGATE_CPU = 512
     const val FARGATE_MEMORY_MIB = 1024
     const val DESIRED_COUNT = 2
-    // The services require a valid Okta JWT on every request (anyRequest().authenticated()),
-    // so an unauthenticated ALB health check to "/" returns 401. Any HTTP response still proves
-    // the app is up, hence the wide healthy range instead of the usual 200.
-    const val HEALTH_CHECK_PATH = "/"
-    const val HEALTHY_HTTP_CODES = "200-499"
+    // The health endpoint is public (permitAll in SecurityConfig), so the ALB can probe it
+    // without a JWT and expect a plain 200 when the app is up.
+    const val HEALTH_CHECK_PATH = "/actuator/health"
+    const val HEALTHY_HTTP_CODES = "200"
     // Public Postgres client image used by the one-shot init container that creates the service DB.
     const val POSTGRES_INIT_IMAGE = "postgres:18-alpine"
 
