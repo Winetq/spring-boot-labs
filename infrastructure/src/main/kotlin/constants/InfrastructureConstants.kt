@@ -1,5 +1,7 @@
 package aui.constants
 
+import software.amazon.awscdk.services.logs.RetentionDays.ONE_WEEK
+
 object InfrastructureConstants {
 
     const val REGION = "REGION"
@@ -65,6 +67,9 @@ object InfrastructureConstants {
     const val HEALTHY_HTTP_CODES = "200"
     // Public Postgres client image used by the one-shot init container that creates the service DB.
     const val POSTGRES_INIT_IMAGE = "postgres:18-alpine"
+
+    // Keep CloudWatch log costs bounded; the default is "never expire".
+    val LOG_RETENTION = ONE_WEEK
 
     // Application Load Balancer (fronts the ECS services)
     const val ALB_NAME = "spring-boot-labs-alb"

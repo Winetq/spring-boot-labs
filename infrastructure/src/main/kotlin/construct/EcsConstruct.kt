@@ -11,6 +11,7 @@ import aui.constants.InfrastructureConstants.FARGATE_CPU
 import aui.constants.InfrastructureConstants.FARGATE_MEMORY_MIB
 import aui.constants.InfrastructureConstants.HEALTHY_HTTP_CODES
 import aui.constants.InfrastructureConstants.HEALTH_CHECK_PATH
+import aui.constants.InfrastructureConstants.LOG_RETENTION
 import aui.constants.InfrastructureConstants.MQ_PORT
 import aui.constants.InfrastructureConstants.NAME_TAG_KEY
 import aui.constants.InfrastructureConstants.POSTGRES_INIT_IMAGE
@@ -33,6 +34,7 @@ import software.amazon.awscdk.services.ecs.ContainerDefinitionOptions
 import software.amazon.awscdk.services.ecs.ContainerDependency
 import software.amazon.awscdk.services.ecs.ContainerDependencyCondition.SUCCESS
 import software.amazon.awscdk.services.ecs.ContainerImage
+import software.amazon.awscdk.services.ecs.DeploymentCircuitBreaker
 import software.amazon.awscdk.services.ecs.FargateService
 import software.amazon.awscdk.services.ecs.FargateTaskDefinition
 import software.amazon.awscdk.services.ecs.LoadBalancerTargetOptions
@@ -93,7 +95,7 @@ class EcsConstruct(
                         "PGPASSWORD" to EcsSecret.fromSecretsManager(ecsProperties.dbSecret, "password"),
                     )
                 )
-                .logging(LogDriver.awsLogs(AwsLogDriverProps.builder().streamPrefix("${spec.serviceName}-db-init").build()))
+                .logging(LogDriver.awsLogs(AwsLogDriverProps.builder().streamPrefix("${spec.serviceName}-db-init").logRetention(LOG_RETENTION).build()))
                 .build()
         )
 
@@ -130,7 +132,7 @@ class EcsConstruct(
                         "RABBIT_PASSWORD" to EcsSecret.fromSecretsManager(ecsProperties.mqSecret, "password"),
                     )
                 )
-                .logging(LogDriver.awsLogs(AwsLogDriverProps.builder().streamPrefix(spec.serviceName).build()))
+                .logging(LogDriver.awsLogs(AwsLogDriverProps.builder().streamPrefix(spec.serviceName).logRetention(LOG_RETENTION).build()))
                 .build()
         )
 
@@ -156,6 +158,14 @@ class EcsConstruct(
                     .build()
             )
             .securityGroups(listOf(ecsProperties.securityGroup))
+            // Abort a deployment quickly once ECS sees repeated task-start failures (e.g. a bad
+            // image or a failing health check) instead of retrying for up to 3 hours, and roll the
+            // service back to the last known-good task definition.
+            .circuitBreaker(
+                DeploymentCircuitBreaker.builder()
+                    .rollback(true)
+                    .build()
+            )
             .build()
 
         ecsProperties.listener.addTargets(

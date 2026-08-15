@@ -370,7 +370,3 @@ Examples:
 ./cdk-deploy-manual.sh -f SpringBootLabsStack     # diff
 ./cdk-deploy-manual.sh -r SpringBootLabsStack     # remove
 ```
-
-TODO:
-- moze log retention do logow cloud watcha
-- circuitBreaker
