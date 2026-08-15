@@ -51,6 +51,26 @@ object InfrastructureConstants {
     // Amazon MQ for RabbitMQ only accepts TLS connections (amqps) on 5671.
     const val MQ_PORT = 5671
 
+    // ECS (Fargate) - used only by the ECS-based stack, the EC2 stack ignores these.
+    const val ECS_CLUSTER_NAME = "spring-boot-labs-ecs-cluster"
+    const val COACH_SERVICE_NAME = "coach"
+    const val SWIMMER_SERVICE_NAME = "swimmer"
+    // Smallest Fargate combo that comfortably starts a Spring Boot JVM (0.5 vCPU / 1 GB).
+    const val FARGATE_CPU = 512
+    const val FARGATE_MEMORY_MIB = 1024
+    const val DESIRED_COUNT = 2
+    // The services require a valid Okta JWT on every request (anyRequest().authenticated()),
+    // so an unauthenticated ALB health check to "/" returns 401. Any HTTP response still proves
+    // the app is up, hence the wide healthy range instead of the usual 200.
+    const val HEALTH_CHECK_PATH = "/"
+    const val HEALTHY_HTTP_CODES = "200-499"
+    // Public Postgres client image used by the one-shot init container that creates the service DB.
+    const val POSTGRES_INIT_IMAGE = "postgres:18-alpine"
+
+    // Application Load Balancer (fronts the ECS services)
+    const val ALB_NAME = "spring-boot-labs-alb"
+    const val ALB_LISTENER_PORT = 80
+
     // API Gateway (HTTP API)
     const val API_NAME = "spring-boot-labs-api"
     const val COACHES_PATH = "coaches"

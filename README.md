@@ -370,3 +370,8 @@ Examples:
 ./cdk-deploy-manual.sh -f SpringBootLabsStack     # diff
 ./cdk-deploy-manual.sh -r SpringBootLabsStack     # remove
 ```
+
+TODO:
+- dodac actuatora do serwisow i zawęzić healthyHttpCodes do /actuator/health + 200
+- moze log retention do logow cloud watcha
+- circuitBreaker

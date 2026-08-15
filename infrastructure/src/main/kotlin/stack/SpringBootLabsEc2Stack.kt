@@ -26,7 +26,7 @@ import software.amazon.awscdk.services.iam.Role
 import software.amazon.awscdk.services.iam.ServicePrincipal
 import software.constructs.Construct
 
-class SpringBootLabsStack(
+class SpringBootLabsEc2Stack(
     scope: Construct,
     stackId: String,
     props: StackProps,

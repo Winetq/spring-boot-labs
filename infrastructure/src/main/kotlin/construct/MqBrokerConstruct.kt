@@ -61,6 +61,13 @@ class MqBrokerConstruct(
     // e.g. "amqps://b-xxxx.mq.eu-central-1.amazonaws.com:5671"
     val amqpEndpoint: String = Fn.select(0, broker.attrAmqpEndpoints)
 
+    // Bare broker host (no "amqps://" prefix, no ":5671" suffix), for use as RABBIT_HOST.
+    // The EC2 stack derives this at runtime with sed in user-data; the ECS stack needs it at
+    // synth time, so we peel the token apart with CloudFormation intrinsics: split on "://" and
+    // take the second half, then split on ":" and take the host.
+    val amqpHost: String =
+        Fn.select(0, Fn.split(":", Fn.select(1, Fn.split("://", amqpEndpoint))))
+
     init {
         Tags.of(this).add(NAME_TAG_KEY, mqBrokerProperties.brokerName)
     }

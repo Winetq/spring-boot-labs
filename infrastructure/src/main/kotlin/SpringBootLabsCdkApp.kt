@@ -3,7 +3,8 @@ package aui
 import aui.config.LevelSettings.createAccountSettings
 import aui.config.readRegion
 import aui.config.readStackName
-import aui.stack.SpringBootLabsStack
+import aui.stack.SpringBootLabsEc2Stack
+import aui.stack.SpringBootLabsEcsStack
 import software.amazon.awscdk.App
 import software.amazon.awscdk.StackProps
 
@@ -17,14 +18,23 @@ object SpringBootLabsCdkApp {
         val settings = createAccountSettings(region)
 
         when (stackName) {
-            "SpringBootLabsStack" -> {
-                SpringBootLabsStack(
+            "SpringBootLabsEc2Stack" -> {
+                SpringBootLabsEc2Stack(
                     scope = app,
-                    stackId = "SpringBootLabsStack",
+                    stackId = "SpringBootLabsEc2Stack",
                     props = StackProps.builder()
                         .env(settings.environment)
                         .build(),
                     region = region,
+                )
+            }
+            "SpringBootLabsEcsStack" -> {
+                SpringBootLabsEcsStack(
+                    scope = app,
+                    stackId = "SpringBootLabsEcsStack",
+                    props = StackProps.builder()
+                        .env(settings.environment)
+                        .build(),
                 )
             }
         }

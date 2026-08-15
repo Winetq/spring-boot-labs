@@ -1,5 +1,6 @@
 package aui.construct
 
+import aui.constants.InfrastructureConstants.ALB_LISTENER_PORT
 import aui.constants.InfrastructureConstants.ALLOWED_INGRESS_CIDR
 import aui.constants.InfrastructureConstants.COACH_PORT
 import aui.constants.InfrastructureConstants.PERSONAL_INGRESS_CIDR
@@ -41,6 +42,9 @@ class SecurityGroupConstruct(
     }
 
     companion object {
+
+        // --- EC2-based stack security groups ---
+
         fun createEc2InstancesSecurityGroupProperties(vpc: IVpc): SecurityGroupProperties =
             SecurityGroupProperties(
                 name = "spring-boot-labs-ec2-instances-sg",
@@ -67,18 +71,19 @@ class SecurityGroupConstruct(
 
         fun createRdsSecurityGroupProperties(
             vpc: IVpc,
-            ec2SecurityGroup: ISecurityGroup,
+            sourceSecurityGroup: ISecurityGroup,
+            sourceDescription: String = "the EC2 instances",
         ): SecurityGroupProperties =
             SecurityGroupProperties(
                 name = "spring-boot-labs-rds-sg",
                 description = "Security group for the RDS PostgreSQL instance",
                 vpc = vpc,
                 inboundRules = listOf(
-                    // ISecurityGroup is an IPeer, so the EC2 SG becomes a source-SG ingress rule.
+                    // ISecurityGroup is an IPeer, so the source SG becomes a source-SG ingress rule.
                     SecurityGroupRule(
-                        peer = ec2SecurityGroup,
+                        peer = sourceSecurityGroup,
                         port = Port.tcp(POSTGRES_PORT),
-                        description = "Allow PostgreSQL access from the EC2 instances",
+                        description = "Allow PostgreSQL access from $sourceDescription",
                     ),
                     // Allow connecting directly from the personal IP only (e.g. from DBeaver).
                     SecurityGroupRule(
@@ -91,7 +96,8 @@ class SecurityGroupConstruct(
 
         fun createMqSecurityGroupProperties(
             vpc: IVpc,
-            ec2SecurityGroup: ISecurityGroup,
+            sourceSecurityGroup: ISecurityGroup,
+            sourceDescription: String = "the EC2 instances",
         ): SecurityGroupProperties =
             SecurityGroupProperties(
                 name = "spring-boot-labs-mq-sg",
@@ -99,9 +105,52 @@ class SecurityGroupConstruct(
                 vpc = vpc,
                 inboundRules = listOf(
                     SecurityGroupRule(
-                        peer = ec2SecurityGroup,
+                        peer = sourceSecurityGroup,
                         port = Port.tcp(MQ_PORT),
-                        description = "Allow AMQPS access from the EC2 instances",
+                        description = "Allow AMQPS access from $sourceDescription",
+                    ),
+                ),
+            )
+
+        // --- ECS-based stack security groups ---
+
+        fun createAlbSecurityGroupProperties(vpc: IVpc): SecurityGroupProperties =
+            SecurityGroupProperties(
+                name = "spring-boot-labs-alb-sg",
+                description = "Security group for the application load balancer",
+                vpc = vpc,
+                inboundRules = listOf(
+                    // API Gateway reaches the public ALB over the internet from AWS-managed IPs,
+                    // so port 80 stays open; requests are still guarded by the Okta JWT authorizer.
+                    // The tighter alternative is a private ALB (internetFacing = false) fronted by an
+                    // API Gateway VPC Link (with its own security group); ingress here would then be
+                    // restricted to that VPC Link's security group instead of 0.0.0.0/0.
+                    SecurityGroupRule(
+                        peer = Peer.ipv4(ALLOWED_INGRESS_CIDR),
+                        port = Port.tcp(ALB_LISTENER_PORT),
+                        description = "Allow inbound HTTP traffic to the ALB",
+                    ),
+                ),
+            )
+
+        fun createEcsTasksSecurityGroupProperties(
+            vpc: IVpc,
+            albSecurityGroup: ISecurityGroup,
+        ): SecurityGroupProperties =
+            SecurityGroupProperties(
+                name = "spring-boot-labs-ecs-tasks-sg",
+                description = "Security group for the ECS Fargate tasks",
+                vpc = vpc,
+                inboundRules = listOf(
+                    SecurityGroupRule(
+                        peer = albSecurityGroup,
+                        port = Port.tcp(COACH_PORT),
+                        description = "Allow traffic from the ALB to the coach service",
+                    ),
+                    SecurityGroupRule(
+                        peer = albSecurityGroup,
+                        port = Port.tcp(SWIMMER_PORT),
+                        description = "Allow traffic from the ALB to the swimmer service",
                     ),
                 ),
             )
