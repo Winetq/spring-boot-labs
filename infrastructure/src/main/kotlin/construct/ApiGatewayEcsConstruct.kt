@@ -5,10 +5,11 @@ import aui.constants.InfrastructureConstants.COACHES_PATH
 import aui.constants.InfrastructureConstants.OKTA_AUDIENCE
 import aui.constants.InfrastructureConstants.OKTA_ISSUER_URL
 import aui.constants.InfrastructureConstants.SWIMMERS_PATH
-import aui.properties.ApiGatewayProperties
+import aui.properties.ApiGatewayEcsProperties
 import software.amazon.awscdk.aws_apigatewayv2_authorizers.HttpJwtAuthorizer
 import software.amazon.awscdk.aws_apigatewayv2_authorizers.HttpJwtAuthorizerProps
-import software.amazon.awscdk.aws_apigatewayv2_integrations.HttpUrlIntegration
+import software.amazon.awscdk.aws_apigatewayv2_integrations.HttpAlbIntegration
+import software.amazon.awscdk.aws_apigatewayv2_integrations.HttpAlbIntegrationProps
 import software.amazon.awscdk.services.apigatewayv2.AddRoutesOptions
 import software.amazon.awscdk.services.apigatewayv2.CorsHttpMethod.DELETE
 import software.amazon.awscdk.services.apigatewayv2.CorsHttpMethod.GET
@@ -18,12 +19,15 @@ import software.amazon.awscdk.services.apigatewayv2.CorsHttpMethod.PUT
 import software.amazon.awscdk.services.apigatewayv2.CorsPreflightOptions
 import software.amazon.awscdk.services.apigatewayv2.HttpApi
 import software.amazon.awscdk.services.apigatewayv2.HttpMethod
+import software.amazon.awscdk.services.apigatewayv2.HttpRouteIntegration
+import software.amazon.awscdk.services.apigatewayv2.IVpcLink
+import software.amazon.awscdk.services.elasticloadbalancingv2.IApplicationListener
 import software.constructs.Construct
 
-class ApiGatewayConstruct(
+class ApiGatewayEcsConstruct(
     scope: Construct,
     id: String,
-    apiGatewayProperties: ApiGatewayProperties,
+    apiGatewayProperties: ApiGatewayEcsProperties,
 ) : Construct(scope, id) {
 
     val httpApi: HttpApi
@@ -54,41 +58,52 @@ class ApiGatewayConstruct(
             .defaultAuthorizer(authorizer)
             .build()
 
-        addProxyRoutes(COACHES_PATH, apiGatewayProperties.coachBaseUrl)
-        addProxyRoutes(SWIMMERS_PATH, apiGatewayProperties.swimmerBaseUrl)
+        // One integration is enough for all routes: the ALB itself routes by path to coach or
+        // swimmer. (The EC2 variant needs a separate integration per service because the target
+        // URL is fixed per integration.)
+        val albIntegration = HttpAlbIntegration(
+            "AlbIntegration",
+            apiGatewayProperties.listener,
+            HttpAlbIntegrationProps.builder()
+                .vpcLink(apiGatewayProperties.vpcLink)
+                .build()
+        )
+
+        addProxyRoutes(COACHES_PATH, albIntegration)
+        addProxyRoutes(SWIMMERS_PATH, albIntegration)
     }
 
     // Prefix-based proxying (e.g. /coaches and /coaches/{proxy+}) instead of listing every endpoint.
     // Only the real HTTP methods are routed - OPTIONS is deliberately excluded so the API's
     // automatic CORS preflight handles it publicly, instead of the JWT authorizer rejecting it.
-    private fun addProxyRoutes(pathPrefix: String, baseUrl: String) {
+    private fun addProxyRoutes(pathPrefix: String, integration: HttpRouteIntegration) {
         val methods = listOf(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE, HttpMethod.PUT)
         httpApi.addRoutes(
             AddRoutesOptions.builder()
                 .path("/$pathPrefix")
                 .methods(methods)
-                .integration(HttpUrlIntegration("$pathPrefix-root", "$baseUrl/$pathPrefix"))
+                .integration(integration)
                 .build()
         )
         httpApi.addRoutes(
             AddRoutesOptions.builder()
                 .path("/$pathPrefix/{proxy+}")
                 .methods(methods)
-                .integration(HttpUrlIntegration("$pathPrefix-proxy", "$baseUrl/$pathPrefix/{proxy}"))
+                .integration(integration)
                 .build()
         )
     }
 
     companion object {
         fun createApiGatewayProperties(
-            coachBaseUrl: String,
-            swimmerBaseUrl: String,
+            listener: IApplicationListener,
+            vpcLink: IVpcLink,
             allowedOrigin: String,
-        ): ApiGatewayProperties =
-            ApiGatewayProperties(
+        ): ApiGatewayEcsProperties =
+            ApiGatewayEcsProperties(
                 apiName = API_NAME,
-                coachBaseUrl = coachBaseUrl,
-                swimmerBaseUrl = swimmerBaseUrl,
+                listener = listener,
+                vpcLink = vpcLink,
                 issuerUrl = OKTA_ISSUER_URL,
                 audience = OKTA_AUDIENCE,
                 allowedOrigin = allowedOrigin,

@@ -114,21 +114,33 @@ class SecurityGroupConstruct(
 
         // --- ECS-based stack security groups ---
 
-        fun createAlbSecurityGroupProperties(vpc: IVpc): SecurityGroupProperties =
+        // The VPC Link's ENIs sit in the VPC and forward API Gateway traffic to the private ALB.
+        // No inbound rules are needed (return traffic is allowed by the stateful SG); it only serves
+        // as a source SG that the ALB trusts.
+        fun createVpcLinkSecurityGroupProperties(vpc: IVpc): SecurityGroupProperties =
+            SecurityGroupProperties(
+                name = "spring-boot-labs-vpc-link-sg",
+                description = "Security group for the API Gateway VPC Link",
+                vpc = vpc,
+                inboundRules = emptyList(),
+            )
+
+        fun createAlbSecurityGroupProperties(
+            vpc: IVpc,
+            vpcLinkSecurityGroup: ISecurityGroup,
+        ): SecurityGroupProperties =
             SecurityGroupProperties(
                 name = "spring-boot-labs-alb-sg",
                 description = "Security group for the application load balancer",
                 vpc = vpc,
                 inboundRules = listOf(
-                    // API Gateway reaches the public ALB over the internet from AWS-managed IPs,
-                    // so port 80 stays open; requests are still guarded by the Okta JWT authorizer.
-                    // The tighter alternative is a private ALB (internetFacing = false) fronted by an
-                    // API Gateway VPC Link (with its own security group); ingress here would then be
-                    // restricted to that VPC Link's security group instead of 0.0.0.0/0.
+                    // The ALB is private (internetFacing = false); only the API Gateway VPC Link may
+                    // reach it, so port 80 is restricted to the VPC Link's security group instead of
+                    // being open to the internet. Requests are still guarded by the Okta JWT authorizer.
                     SecurityGroupRule(
-                        peer = Peer.ipv4(ALLOWED_INGRESS_CIDR),
+                        peer = vpcLinkSecurityGroup,
                         port = Port.tcp(ALB_LISTENER_PORT),
-                        description = "Allow inbound HTTP traffic to the ALB",
+                        description = "Allow inbound HTTP traffic from the API Gateway VPC Link",
                     ),
                 ),
             )

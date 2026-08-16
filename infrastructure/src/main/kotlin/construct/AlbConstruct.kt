@@ -27,7 +27,9 @@ class AlbConstruct(
         ApplicationLoadBalancer.Builder.create(this, "Alb")
             .loadBalancerName(albProperties.name)
             .vpc(albProperties.vpc)
-            .internetFacing(true)
+            // Private ALB: it has no public IPs and only the API Gateway VPC Link can reach it
+            // (enforced by the ALB security group). API Gateway is the single public entry point.
+            .internetFacing(false)
             .crossZoneEnabled(true)
             .securityGroup(albProperties.securityGroup)
             .vpcSubnets(

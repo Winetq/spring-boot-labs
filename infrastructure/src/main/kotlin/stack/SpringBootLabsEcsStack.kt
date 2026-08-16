@@ -2,8 +2,8 @@ package aui.stack
 
 import aui.construct.AlbConstruct
 import aui.construct.AlbConstruct.Companion.createAlbProperties
-import aui.construct.ApiGatewayConstruct
-import aui.construct.ApiGatewayConstruct.Companion.createApiGatewayProperties
+import aui.construct.ApiGatewayEcsConstruct
+import aui.construct.ApiGatewayEcsConstruct.Companion.createApiGatewayProperties
 import aui.construct.EcsConstruct
 import aui.construct.EcsConstruct.Companion.createEcsProperties
 import aui.construct.MqBrokerConstruct
@@ -15,8 +15,11 @@ import aui.construct.SecurityGroupConstruct.Companion.createAlbSecurityGroupProp
 import aui.construct.SecurityGroupConstruct.Companion.createEcsTasksSecurityGroupProperties
 import aui.construct.SecurityGroupConstruct.Companion.createMqSecurityGroupProperties
 import aui.construct.SecurityGroupConstruct.Companion.createRdsSecurityGroupProperties
+import aui.construct.SecurityGroupConstruct.Companion.createVpcLinkSecurityGroupProperties
 import aui.construct.StaticSiteConstruct
 import aui.construct.StaticSiteConstruct.Companion.createStaticSiteProperties
+import aui.construct.VpcLinkConstruct
+import aui.construct.VpcLinkConstruct.Companion.createVpcLinkProperties
 import software.amazon.awscdk.CfnOutput
 import software.amazon.awscdk.Stack
 import software.amazon.awscdk.StackProps
@@ -40,11 +43,20 @@ class SpringBootLabsEcsStack(
                 .build()
         )
 
-        // The ALB is the only public entry point; the ECS tasks accept traffic from it alone.
+        // The VPC Link is the only thing allowed to reach the private ALB, so its security group
+        // must exist before the ALB security group (which references it as its ingress source).
+        val vpcLinkSecurityGroup = SecurityGroupConstruct(
+            this,
+            "VpcLinkSecurityGroup",
+            createVpcLinkSecurityGroupProperties(vpc)
+        ).securityGroup
+
+        // The private ALB accepts traffic only from the API Gateway VPC Link; the ECS tasks in turn
+        // accept traffic from the ALB alone.
         val albSecurityGroup = SecurityGroupConstruct(
             this,
             "AlbSecurityGroup",
-            createAlbSecurityGroupProperties(vpc)
+            createAlbSecurityGroupProperties(vpc, vpcLinkSecurityGroup)
         ).securityGroup
 
         val ecsTasksSecurityGroup = SecurityGroupConstruct(
@@ -107,15 +119,21 @@ class SpringBootLabsEcsStack(
             createStaticSiteProperties()
         )
 
-        // Both routes point at the same ALB; the load balancer forwards /coaches* and /swimmers*
-        // to the matching ECS service, so the API Gateway only needs the ALB's public DNS name.
-        val albBaseUrl = "http://${alb.dnsName}"
-        val api = ApiGatewayConstruct(
+        // Private connection between the public HTTP API and the internal ALB.
+        val vpcLink = VpcLinkConstruct(
+            this,
+            "ApiVpcLink",
+            createVpcLinkProperties(vpc, vpcLinkSecurityGroup)
+        ).vpcLink
+
+        // API Gateway forwards straight to the ALB listener over the VPC Link; the ALB does the
+        // path-based routing to coach/swimmer, so a single integration covers every route.
+        val api = ApiGatewayEcsConstruct(
             this,
             "ApiGateway",
             createApiGatewayProperties(
-                coachBaseUrl = albBaseUrl,
-                swimmerBaseUrl = albBaseUrl,
+                listener = alb.listener,
+                vpcLink = vpcLink,
                 allowedOrigin = "https://${staticSite.distributionDomainName}",
             )
         )
@@ -132,11 +150,6 @@ class SpringBootLabsEcsStack(
         CfnOutput.Builder.create(this, "ClientUrl")
             .description("Public HTTPS URL of the CloudFront-hosted frontend")
             .value("https://${staticSite.distributionDomainName}")
-            .build()
-
-        CfnOutput.Builder.create(this, "LoadBalancerDns")
-            .description("Public DNS name of the application load balancer")
-            .value(alb.dnsName)
             .build()
     }
 }

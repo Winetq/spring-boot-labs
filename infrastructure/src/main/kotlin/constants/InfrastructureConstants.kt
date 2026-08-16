@@ -75,6 +75,9 @@ object InfrastructureConstants {
     const val ALB_NAME = "spring-boot-labs-alb"
     const val ALB_LISTENER_PORT = 80
 
+    // VPC Link (private connection from API Gateway HTTP API to the internal ALB)
+    const val VPC_LINK_NAME = "spring-boot-labs-vpc-link"
+
     // API Gateway (HTTP API)
     const val API_NAME = "spring-boot-labs-api"
     const val COACHES_PATH = "coaches"

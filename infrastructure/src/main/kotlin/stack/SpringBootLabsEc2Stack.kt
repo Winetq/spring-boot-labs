@@ -1,7 +1,7 @@
 package aui.stack
 
-import aui.construct.ApiGatewayConstruct
-import aui.construct.ApiGatewayConstruct.Companion.createApiGatewayProperties
+import aui.construct.ApiGatewayEc2Construct
+import aui.construct.ApiGatewayEc2Construct.Companion.createApiGatewayProperties
 import aui.construct.Ec2InstanceConstruct
 import aui.construct.Ec2InstanceConstruct.Companion.createCoachEc2InstanceProperties
 import aui.construct.Ec2InstanceConstruct.Companion.createSwimmerEc2InstanceProperties
@@ -118,7 +118,7 @@ class SpringBootLabsEc2Stack(
             createStaticSiteProperties()
         )
 
-        val api = ApiGatewayConstruct(
+        val api = ApiGatewayEc2Construct(
             this,
             "ApiGateway",
             createApiGatewayProperties(

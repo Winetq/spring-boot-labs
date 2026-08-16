@@ -1,6 +1,6 @@
 package aui.properties
 
-data class ApiGatewayProperties(
+data class ApiGatewayEc2Properties(
     val apiName: String,
     val coachBaseUrl: String,
     val swimmerBaseUrl: String,
