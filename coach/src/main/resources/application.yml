@@ -4,16 +4,24 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+  # Read replica endpoint. Falls back to the writer host when no replica is configured (local/dev).
+  datasource-replica:
+    url: jdbc:postgresql://${POSTGRES_READ_HOST:${POSTGRES_HOST}}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     generate-ddl: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     open-in-view: false
   rabbitmq:
     host: ${RABBIT_HOST}
     port: ${RABBIT_PORT}
     username: ${RABBIT_USER}
     password: ${RABBIT_PASSWORD}
+    ssl:
+      enabled: ${RABBIT_SSL_ENABLED:false}
     queue:
       delete-coach-queue: delete.coach.queue
       get-coach-swimmers-queue: get.coach.swimmers.queue

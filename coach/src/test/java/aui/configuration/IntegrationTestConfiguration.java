@@ -32,6 +32,10 @@ public class IntegrationTestConfiguration extends AbstractTestNGSpringContextTes
         registry.add("spring.datasource.driver-class-name", () -> "org.h2.Driver");
         registry.add("spring.datasource.username", () -> "admin");
         registry.add("spring.datasource.password", () -> "admin");
+        registry.add("spring.datasource-replica.url", () -> "jdbc:h2:mem:spring-boot-app");
+        registry.add("spring.datasource-replica.driver-class-name", () -> "org.h2.Driver");
+        registry.add("spring.datasource-replica.username", () -> "admin");
+        registry.add("spring.datasource-replica.password", () -> "admin");
         registry.add("spring.rabbitmq.host", RABBIT_MQ_CONTAINER::getHost);
         registry.add("spring.rabbitmq.port", RABBIT_MQ_CONTAINER::getAmqpPort);
         registry.add("spring.rabbitmq.username", RABBIT_MQ_CONTAINER::getAdminUsername);

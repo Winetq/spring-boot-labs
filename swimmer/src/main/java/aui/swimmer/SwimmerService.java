@@ -13,22 +13,27 @@ public class SwimmerService {
 
     private final SwimmerRepository swimmerRepository;
 
+    @Transactional(readOnly = true)
     public Optional<Swimmer> find(Long id) {
         return swimmerRepository.findById(id);
     }
 
+    @Transactional(readOnly = true)
     public List<Swimmer> findAll() {
         return swimmerRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public List<Swimmer> findByCoachId(Long coachId) {
         return swimmerRepository.findByCoachId(coachId);
     }
 
+    @Transactional
     public Swimmer save(Swimmer entity) {
         return swimmerRepository.save(entity);
     }
 
+    @Transactional
     public Swimmer updateSpecialization(Long id, String specialization) {
         return find(id)
                 .map(swimmer -> {
@@ -43,6 +48,7 @@ public class SwimmerService {
         return swimmerRepository.unassignCoach(coachId);
     }
 
+    @Transactional
     public boolean delete(Long id) {
         return find(id)
                 .map(swimmer -> {

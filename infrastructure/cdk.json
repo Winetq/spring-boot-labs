@@ -1,0 +1,6 @@
+{
+  "app": "/bin/bash ./cdk-app.sh",
+  "context": {
+    "@aws-cdk/customresources:installLatestAwsSdkDefault": false
+  }
+}
