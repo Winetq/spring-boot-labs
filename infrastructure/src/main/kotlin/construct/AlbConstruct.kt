@@ -59,8 +59,6 @@ class AlbConstruct(
                 .build()
         )
 
-    val dnsName: String = loadBalancer.loadBalancerDnsName
-
     init {
         Tags.of(this).add(NAME_TAG_KEY, albProperties.name)
     }

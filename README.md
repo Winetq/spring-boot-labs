@@ -328,16 +328,7 @@ sudo docker logs -f swimmer    # on the swimmer instance
 
 **ECS stack** — the Fargate tasks stream their logs to **CloudWatch Logs** (retention: one week). The log groups
 are auto-named by CDK, so the easiest way is the CloudWatch console → *Log groups* (stream prefixes are `coach` /
-`swimmer`). From the CLI you can discover the group and tail it:
-
-```bash
-source aws-creds.sh
-# list the auto-generated log groups for this stack
-aws logs describe-log-groups \
-  --query "logGroups[?contains(logGroupName, 'SpringBootLabsEcsStack')].logGroupName" --output table
-# then follow one of them
-aws logs tail <log-group-name> --follow
-```
+`swimmer`).
 
 The routing datasource logs `Setting writer (read-write) datasource` / `Setting replica (read-only) datasource`,
 so these logs are also the easiest way to confirm the writer/reader split is working.
@@ -347,32 +338,17 @@ so these logs are also the easiest way to confirm the writer/reader split is wor
 Both the writer and the replica are publicly reachable, but the RDS security group only allows port `5432` from
 the `PERSONAL_INGRESS_CIDR` range (`165.1.145.0/24`) — update that constant if your public IP changes.
 
-1. Find the endpoints (writer identifier `spring-boot-labs-postgre-sql`, replica `…-postgre-sql-replica`):
-
-   ```bash
-   source aws-creds.sh                     # sets the personal-aws profile + region
-   aws rds describe-db-instances \
-     --query "DBInstances[].{id:DBInstanceIdentifier,endpoint:Endpoint.Address,role:ReadReplicaSourceDBInstanceIdentifier}" \
-     --output table
-   ```
-
-2. Fetch the master credentials (the replica inherits the same ones from Secrets Manager):
-
-   ```bash
-   aws secretsmanager get-secret-value \
-     --secret-id <rds-secret-arn-or-name> \
-     --query SecretString --output text | jq
-   ```
-
+1. Find the endpoints (writer identifier `spring-boot-labs-postgre-sql`, replica `…-postgre-sql-replica`).
+2. Fetch the master credentials (the replica inherits the same ones from Secrets Manager).
 3. In any database client (e.g. DBeaver) create a PostgreSQL connection:
 
-   | Field    | Value                                             |
-   |----------|---------------------------------------------------|
-   | Host     | writer or replica endpoint from step 1            |
-   | Port     | `5432`                                            |
-   | Database | `coach_db`, `swimmer_db` or `postgres`            |
-   | User     | `username` from the secret (`dbadmin`)            |
-   | Password | `password` from the secret                        |
+   | Field    | Value                                  |
+   |----------|----------------------------------------|
+   | Host     | writer or replica endpoint from step 1 |
+   | Port     | `5432`                                 |
+   | Database | `coach_db`, `swimmer_db` or `postgres` |
+   | User     | `username` from the secret             |
+   | Password | `password` from the secret             |
 
 4. To confirm which node you are on, run `SELECT pg_is_in_recovery();` — it returns `true` on the **read replica**
    (read-only recovery mode) and `false` on the **writer**.
