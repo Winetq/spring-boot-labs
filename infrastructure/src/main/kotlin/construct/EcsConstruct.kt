@@ -16,6 +16,9 @@ import aui.constants.InfrastructureConstants.MQ_PORT
 import aui.constants.InfrastructureConstants.NAME_TAG_KEY
 import aui.constants.InfrastructureConstants.POSTGRES_INIT_IMAGE
 import aui.constants.InfrastructureConstants.POSTGRES_PORT
+import aui.constants.InfrastructureConstants.SCALING_MAX_CAPACITY
+import aui.constants.InfrastructureConstants.SCALING_MIN_CAPACITY
+import aui.constants.InfrastructureConstants.SCALING_TARGET_CPU_PERCENT
 import aui.constants.InfrastructureConstants.SWIMMERS_PATH
 import aui.constants.InfrastructureConstants.SWIMMER_IMAGE
 import aui.constants.InfrastructureConstants.SWIMMER_PORT
@@ -23,7 +26,9 @@ import aui.constants.InfrastructureConstants.SWIMMER_DATABASE_NAME
 import aui.constants.InfrastructureConstants.SWIMMER_SERVICE_NAME
 import aui.properties.EcsProperties
 import aui.properties.EcsProperties.EcsServiceSpec
+import software.amazon.awscdk.Duration
 import software.amazon.awscdk.Tags
+import software.amazon.awscdk.services.applicationautoscaling.EnableScalingProps
 import software.amazon.awscdk.services.ec2.ISecurityGroup
 import software.amazon.awscdk.services.ec2.IVpc
 import software.amazon.awscdk.services.ec2.SubnetSelection
@@ -35,6 +40,7 @@ import software.amazon.awscdk.services.ecs.ContainerDependency
 import software.amazon.awscdk.services.ecs.ContainerDependencyCondition.SUCCESS
 import software.amazon.awscdk.services.ecs.ContainerImage
 import software.amazon.awscdk.services.ecs.DeploymentCircuitBreaker
+import software.amazon.awscdk.services.ecs.CpuUtilizationScalingProps
 import software.amazon.awscdk.services.ecs.FargateService
 import software.amazon.awscdk.services.ecs.FargateTaskDefinition
 import software.amazon.awscdk.services.ecs.LoadBalancerTargetOptions
@@ -167,6 +173,25 @@ class EcsConstruct(
                     .build()
             )
             .build()
+
+        // Target-tracking auto-scaling: ECS keeps the running tasks' average CPU near the target
+        // by adding tasks (up to maxCapacity) under load and removing them (down to minCapacity)
+        // when it drops. The cooldowns give a newly started Spring Boot task time to warm up before
+        // the metric is trusted again, avoiding thrashing.
+        val scaling = service.autoScaleTaskCount(
+            EnableScalingProps.builder()
+                .minCapacity(SCALING_MIN_CAPACITY)
+                .maxCapacity(SCALING_MAX_CAPACITY)
+                .build()
+        )
+        scaling.scaleOnCpuUtilization(
+            "${name}CpuScaling",
+            CpuUtilizationScalingProps.builder()
+                .targetUtilizationPercent(SCALING_TARGET_CPU_PERCENT)
+                .scaleInCooldown(Duration.seconds(60))
+                .scaleOutCooldown(Duration.seconds(60))
+                .build()
+        )
 
         ecsProperties.listener.addTargets(
             "${name}Targets",
