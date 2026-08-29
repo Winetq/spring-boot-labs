@@ -16,6 +16,8 @@ import aui.construct.SecurityGroupConstruct.Companion.createEcsTasksSecurityGrou
 import aui.construct.SecurityGroupConstruct.Companion.createMqSecurityGroupProperties
 import aui.construct.SecurityGroupConstruct.Companion.createRdsSecurityGroupProperties
 import aui.construct.SecurityGroupConstruct.Companion.createVpcLinkSecurityGroupProperties
+import aui.construct.SnsTopicConstruct
+import aui.construct.SnsTopicConstruct.Companion.createAlarmsSnsTopicProperties
 import aui.construct.StaticSiteConstruct
 import aui.construct.StaticSiteConstruct.Companion.createStaticSiteProperties
 import aui.construct.VpcLinkConstruct
@@ -96,6 +98,13 @@ class SpringBootLabsEcsStack(
             createAlbProperties(vpc, albSecurityGroup)
         )
 
+        // Single SNS topic (email subscription) that every CloudWatch alarm publishes to.
+        val alarmsTopic = SnsTopicConstruct(
+            this,
+            "AlarmsTopic",
+            createAlarmsSnsTopicProperties()
+        ).topic
+
         // ECS reads the DB and MQ secrets from Secrets Manager; CDK grants the task execution
         // role read access automatically because they are wired in via .secrets(...).
         EcsConstruct(
@@ -110,6 +119,7 @@ class SpringBootLabsEcsStack(
                 dbReadHost = rds.readerEndpointAddress,
                 mqSecret = mq.secret,
                 mqHost = mq.amqpHost,
+                alarmTopic = alarmsTopic,
             )
         )
 

@@ -4,6 +4,7 @@ import software.amazon.awscdk.services.ec2.ISecurityGroup
 import software.amazon.awscdk.services.ec2.IVpc
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationListener
 import software.amazon.awscdk.services.secretsmanager.ISecret
+import software.amazon.awscdk.services.sns.ITopic
 
 data class EcsProperties(
     val clusterName: String,
@@ -15,6 +16,7 @@ data class EcsProperties(
     val dbReadHost: String,
     val mqSecret: ISecret,
     val mqHost: String,
+    val alarmTopic: ITopic,
     val services: List<EcsServiceSpec>,
 ) {
 

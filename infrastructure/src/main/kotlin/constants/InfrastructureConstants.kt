@@ -61,6 +61,11 @@ object InfrastructureConstants {
     const val FARGATE_CPU = 512
     const val FARGATE_MEMORY_MIB = 1024
     const val DESIRED_COUNT = 2
+    // Service auto-scaling (target tracking on average CPU). ECS adds tasks when the running
+    // tasks' average CPU stays above the target and removes them when it drops well below.
+    const val SCALING_MIN_CAPACITY = 1
+    const val SCALING_MAX_CAPACITY = 4
+    const val SCALING_TARGET_CPU_PERCENT = 60
     // The health endpoint is public (permitAll in SecurityConfig), so the ALB can probe it
     // without a JWT and expect a plain 200 when the app is up.
     const val HEALTH_CHECK_PATH = "/actuator/health"
