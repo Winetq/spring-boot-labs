@@ -24,11 +24,15 @@ import aui.constants.InfrastructureConstants.SWIMMER_IMAGE
 import aui.constants.InfrastructureConstants.SWIMMER_PORT
 import aui.constants.InfrastructureConstants.SWIMMER_DATABASE_NAME
 import aui.constants.InfrastructureConstants.SWIMMER_SERVICE_NAME
+import aui.construct.CloudWatchAlarmConstruct.Companion.createHighCpuAlarmProperties
+import aui.construct.CloudWatchAlarmConstruct.Companion.createUnhealthyHostsAlarmProperties
 import aui.properties.EcsProperties
 import aui.properties.EcsProperties.EcsServiceSpec
 import software.amazon.awscdk.Duration
 import software.amazon.awscdk.Tags
 import software.amazon.awscdk.services.applicationautoscaling.EnableScalingProps
+import software.amazon.awscdk.services.cloudwatch.MetricOptions
+import software.amazon.awscdk.services.cloudwatch.Stats.MAXIMUM
 import software.amazon.awscdk.services.ec2.ISecurityGroup
 import software.amazon.awscdk.services.ec2.IVpc
 import software.amazon.awscdk.services.ec2.SubnetSelection
@@ -54,6 +58,7 @@ import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationProtoco
 import software.amazon.awscdk.services.elasticloadbalancingv2.HealthCheck
 import software.amazon.awscdk.services.elasticloadbalancingv2.ListenerCondition
 import software.amazon.awscdk.services.secretsmanager.ISecret
+import software.amazon.awscdk.services.sns.ITopic
 import software.constructs.Construct
 
 class EcsConstruct(
@@ -193,7 +198,24 @@ class EcsConstruct(
                 .build()
         )
 
-        ecsProperties.listener.addTargets(
+        // Notify by email when a service is genuinely hot. The scaling policy above reacts to the
+        // same signal, but this alarm makes it visible (and works even at maxCapacity, when scaling
+        // can no longer help). CPU is sampled at 1-minute resolution rather than the 5-minute default.
+        CloudWatchAlarmConstruct(
+            this,
+            "${name}HighCpuAlarm",
+            createHighCpuAlarmProperties(
+                serviceName = spec.serviceName,
+                cpuMetric = service.metricCpuUtilization(
+                    MetricOptions.builder()
+                        .period(Duration.minutes(1))
+                        .build()
+                ),
+                snsTopic = ecsProperties.alarmTopic,
+            )
+        )
+
+        val targetGroup = ecsProperties.listener.addTargets(
             "${name}Targets",
             AddApplicationTargetsProps.builder()
                 // Unique rule priority (ALB requires it); rules are evaluated low-to-high and the
@@ -221,6 +243,24 @@ class EcsConstruct(
                 )
                 .build()
         )
+
+        // The ALB health checks each task on /actuator/health and publishes the count of failing
+        // targets as UnHealthyHostCount. This alarm only reads that metric; Maximum over the minute
+        // catches even a single unhealthy task (e.g. a crash loop or a task that never warms up).
+        CloudWatchAlarmConstruct(
+            this,
+            "${name}UnhealthyHostsAlarm",
+            createUnhealthyHostsAlarmProperties(
+                serviceName = spec.serviceName,
+                unhealthyHostCountMetric = targetGroup.metrics.unhealthyHostCount(
+                    MetricOptions.builder()
+                        .period(Duration.minutes(1))
+                        .statistic(MAXIMUM)
+                        .build()
+                ),
+                snsTopic = ecsProperties.alarmTopic,
+            )
+        )
     }
 
     private fun initDatabaseScript(dbHost: String, databaseName: String): String =
@@ -239,6 +279,7 @@ class EcsConstruct(
             dbReadHost: String,
             mqSecret: ISecret,
             mqHost: String,
+            alarmTopic: ITopic,
         ): EcsProperties =
             EcsProperties(
                 clusterName = ECS_CLUSTER_NAME,
@@ -250,6 +291,7 @@ class EcsConstruct(
                 dbReadHost = dbReadHost,
                 mqSecret = mqSecret,
                 mqHost = mqHost,
+                alarmTopic = alarmTopic,
                 services = listOf(
                     EcsServiceSpec(
                         serviceName = COACH_SERVICE_NAME,

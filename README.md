@@ -26,6 +26,7 @@ services (API Gateway, Amazon MQ, RDS PostgreSQL with a read replica, S3 + Cloud
 | Frontend       | Vanilla JavaScript, HTML, CSS, Okta Auth JS SDK (served via S3 + CloudFront in the cloud) |
 | Containerization | Docker, Docker Compose                                            |
 | Cloud          | AWS — EC2 **or** ECS/Fargate, API Gateway, Amazon MQ, RDS PostgreSQL (+ read replica), S3 + CloudFront, Secrets Manager, CloudWatch Logs |
+| Monitoring     | CloudWatch alarms (high CPU, unhealthy hosts) with email notifications via SNS |
 | IaC            | AWS CDK (Kotlin, Gradle)                                            |
 | CI/CD          | GitHub Actions                                                      |
 | Testing        | TestNG, Testcontainers (PostgreSQL, RabbitMQ), Awaitility, MockMvc  |
@@ -151,8 +152,10 @@ flowchart TB
 
         subgraph Private["Private ALB (internal) + ECS Fargate"]
             ALB[Application Load Balancer<br/>internal • path routing]
-            Coach[Coach task<br/>Fargate :8081]
-            Swimmer[Swimmer task<br/>Fargate :8082]
+            subgraph Scaling["Service auto scaling (target CPU 60%)"]
+                Coach[Coach task<br/>Fargate :8081]
+                Swimmer[Swimmer task<br/>Fargate :8082]
+            end
         end
 
         MQ[[Amazon MQ<br/>RabbitMQ • TLS :5671]]
@@ -164,6 +167,11 @@ flowchart TB
 
         SM[Secrets Manager<br/>RDS + MQ credentials]
         Logs[CloudWatch Logs]
+
+        subgraph Monitoring["Monitoring"]
+            Alarms[CloudWatch Alarms<br/>high CPU • unhealthy hosts]
+            SNS[[SNS topic<br/>email subscription]]
+        end
     end
 
     User -->|static site| CF
@@ -187,6 +195,12 @@ flowchart TB
     Swimmer -. reads creds .-> SM
     Coach -. logs .-> Logs
     Swimmer -. logs .-> Logs
+
+    Coach -. CPU metric .-> Alarms
+    Swimmer -. CPU metric .-> Alarms
+    ALB -. unhealthy hosts .-> Alarms
+    Alarms -->|on breach| SNS
+    SNS -->|notifies| Admin([Admin email])
 
     DBeaver -->|:5432| Writer
     DBeaver -->|:5432| Replica
