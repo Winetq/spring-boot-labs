@@ -3,13 +3,21 @@ package aui.construct
 import aui.constants.InfrastructureConstants.CLIENT_SITE_NAME
 import aui.constants.InfrastructureConstants.CLIENT_SOURCE_PATH
 import aui.constants.InfrastructureConstants.NAME_TAG_KEY
+import aui.constants.InfrastructureConstants.SITE_DOMAIN_NAME
 import aui.properties.StaticSiteProperties
 import software.amazon.awscdk.RemovalPolicy.DESTROY
 import software.amazon.awscdk.Tags
+import software.amazon.awscdk.services.certificatemanager.ICertificate
 import software.amazon.awscdk.services.cloudfront.BehaviorOptions
 import software.amazon.awscdk.services.cloudfront.Distribution
 import software.amazon.awscdk.services.cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS
 import software.amazon.awscdk.services.cloudfront.origins.S3BucketOrigin
+import software.amazon.awscdk.services.route53.AaaaRecord
+import software.amazon.awscdk.services.route53.ARecord
+import software.amazon.awscdk.services.route53.HostedZone
+import software.amazon.awscdk.services.route53.HostedZoneProviderProps
+import software.amazon.awscdk.services.route53.RecordTarget
+import software.amazon.awscdk.services.route53.targets.CloudFrontTarget
 import software.amazon.awscdk.services.s3.BlockPublicAccess.BLOCK_ALL
 import software.amazon.awscdk.services.s3.Bucket
 import software.amazon.awscdk.services.s3.deployment.BucketDeployment
@@ -24,8 +32,8 @@ class StaticSiteConstruct(
 
     private val bucket: Bucket
 
-    // CloudFront domain used as the public HTTPS entry point for the frontend.
-    val distributionDomainName: String
+    // Public HTTPS entry point for the frontend, on the custom domain (not the raw CloudFront URL).
+    val siteUrl: String = "https://${staticSiteProperties.domainName}"
 
     init {
         // Private bucket - only CloudFront (via OAC) can read it, never the public internet.
@@ -37,6 +45,9 @@ class StaticSiteConstruct(
 
         val distribution = Distribution.Builder.create(this, "SiteDistribution")
             .defaultRootObject("index.html")
+            // Serve the frontend from the custom domain, secured by the us-east-1 ACM certificate.
+            .domainNames(listOf(staticSiteProperties.domainName))
+            .certificate(staticSiteProperties.certificate)
             .defaultBehavior(
                 BehaviorOptions.builder()
                     // OAC (Origin Access Control) is the modern replacement for OAI.
@@ -47,7 +58,24 @@ class StaticSiteConstruct(
             )
             .build()
 
-        distributionDomainName = distribution.distributionDomainName
+        // The delegated subdomain is a Route 53 hosted zone, so point its apex at CloudFront with
+        // alias records (A + AAAA for IPv6). Aliases work at the zone apex and are free to query.
+        val hostedZone = HostedZone.fromLookup(
+            this,
+            "SiteHostedZone",
+            HostedZoneProviderProps.builder()
+                .domainName(SITE_DOMAIN_NAME)
+                .build()
+        )
+        val aliasTarget = RecordTarget.fromAlias(CloudFrontTarget(distribution))
+        ARecord.Builder.create(this, "SiteAliasRecordIpv4")
+            .zone(hostedZone)
+            .target(aliasTarget)
+            .build()
+        AaaaRecord.Builder.create(this, "SiteAliasRecordIpv6")
+            .zone(hostedZone)
+            .target(aliasTarget)
+            .build()
 
         Tags.of(this).add(NAME_TAG_KEY, staticSiteProperties.siteName)
     }
@@ -81,10 +109,12 @@ class StaticSiteConstruct(
             |}
             """.trimMargin()
 
-        fun createStaticSiteProperties(): StaticSiteProperties =
+        fun createStaticSiteProperties(certificate: ICertificate): StaticSiteProperties =
             StaticSiteProperties(
                 siteName = CLIENT_SITE_NAME,
                 sourcePath = CLIENT_SOURCE_PATH,
+                domainName = SITE_DOMAIN_NAME,
+                certificate = certificate,
             )
     }
 }

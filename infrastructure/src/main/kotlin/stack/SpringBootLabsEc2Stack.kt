@@ -20,6 +20,7 @@ import aui.constants.InfrastructureConstants.SWIMMER_PORT
 import software.amazon.awscdk.CfnOutput
 import software.amazon.awscdk.Stack
 import software.amazon.awscdk.StackProps
+import software.amazon.awscdk.services.certificatemanager.ICertificate
 import software.amazon.awscdk.services.ec2.Vpc
 import software.amazon.awscdk.services.ec2.VpcLookupOptions
 import software.amazon.awscdk.services.iam.Role
@@ -31,6 +32,7 @@ class SpringBootLabsEc2Stack(
     stackId: String,
     props: StackProps,
     region: String,
+    certificate: ICertificate,
 ) : Stack(scope, stackId, props) {
 
     init {
@@ -115,7 +117,7 @@ class SpringBootLabsEc2Stack(
         val staticSite = StaticSiteConstruct(
             this,
             "ClientStaticSite",
-            createStaticSiteProperties()
+            createStaticSiteProperties(certificate)
         )
 
         val api = ApiGatewayEc2Construct(
@@ -124,7 +126,7 @@ class SpringBootLabsEc2Stack(
             createApiGatewayProperties(
                 coachBaseUrl = "http://${coachInstance.instancePublicIp}:$COACH_PORT",
                 swimmerBaseUrl = "http://${swimmerInstance.instancePublicIp}:$SWIMMER_PORT",
-                allowedOrigin = "https://${staticSite.distributionDomainName}",
+                allowedOrigin = staticSite.siteUrl,
             )
         )
 
@@ -139,7 +141,7 @@ class SpringBootLabsEc2Stack(
 
         CfnOutput.Builder.create(this, "ClientUrl")
             .description("Public HTTPS URL of the CloudFront-hosted frontend")
-            .value("https://${staticSite.distributionDomainName}")
+            .value(staticSite.siteUrl)
             .build()
     }
 }

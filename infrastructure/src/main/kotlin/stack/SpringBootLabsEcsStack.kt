@@ -25,6 +25,7 @@ import aui.construct.VpcLinkConstruct.Companion.createVpcLinkProperties
 import software.amazon.awscdk.CfnOutput
 import software.amazon.awscdk.Stack
 import software.amazon.awscdk.StackProps
+import software.amazon.awscdk.services.certificatemanager.ICertificate
 import software.amazon.awscdk.services.ec2.Vpc
 import software.amazon.awscdk.services.ec2.VpcLookupOptions
 import software.constructs.Construct
@@ -33,6 +34,7 @@ class SpringBootLabsEcsStack(
     scope: Construct,
     stackId: String,
     props: StackProps,
+    certificate: ICertificate,
 ) : Stack(scope, stackId, props) {
 
     init {
@@ -126,7 +128,7 @@ class SpringBootLabsEcsStack(
         val staticSite = StaticSiteConstruct(
             this,
             "ClientStaticSite",
-            createStaticSiteProperties()
+            createStaticSiteProperties(certificate)
         )
 
         // Private connection between the public HTTP API and the internal ALB.
@@ -144,7 +146,7 @@ class SpringBootLabsEcsStack(
             createApiGatewayProperties(
                 listener = alb.listener,
                 vpcLink = vpcLink,
-                allowedOrigin = "https://${staticSite.distributionDomainName}",
+                allowedOrigin = staticSite.siteUrl,
             )
         )
 
@@ -159,7 +161,7 @@ class SpringBootLabsEcsStack(
 
         CfnOutput.Builder.create(this, "ClientUrl")
             .description("Public HTTPS URL of the CloudFront-hosted frontend")
-            .value("https://${staticSite.distributionDomainName}")
+            .value(staticSite.siteUrl)
             .build()
     }
 }

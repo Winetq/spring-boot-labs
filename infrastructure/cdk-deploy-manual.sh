@@ -22,6 +22,13 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
+# The CloudFront certificate stack is hardcoded to us-east-1, so deploying it from any other
+# region would only bootstrap the wrong region and leave us-east-1 unbootstrapped. Fail fast.
+if [ "$STACK" == "SiteCertificateStack" ] && [ "$AWS_REGION" != "us-east-1" ]; then
+    echo "SiteCertificateStack must be deployed to us-east-1. Pass us-east-1 as the region argument."
+    exit 1
+fi
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 source "$DIR/aws-creds.sh" "$PROFILE" "$AWS_REGION"

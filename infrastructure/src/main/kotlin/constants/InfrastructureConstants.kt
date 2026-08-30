@@ -92,6 +92,9 @@ object InfrastructureConstants {
     const val CLIENT_SITE_NAME = "spring-boot-labs-client"
     // Path to the frontend, relative to the infrastructure/ directory.
     const val CLIENT_SOURCE_PATH = "../client"
+    // Custom domain for the frontend. This subdomain is delegated to Route 53 (its NS records live
+    // in Cloudflare, the registrar), so CDK is authoritative for it and manages the cert + alias.
+    const val SITE_DOMAIN_NAME = "app.spring-boot-labs.uk"
 
     // Okta (JWT authorizer) - must match the services' resource-server config.
     const val OKTA_ISSUER_URL = "https://integrator-5997569.okta.com/oauth2/default"
