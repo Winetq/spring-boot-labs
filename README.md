@@ -230,8 +230,7 @@ default random `*.cloudfront.net` address. This applies to **both stacks** (they
 
 **Why it matters:**
 - A stable, human-friendly URL that **does not change between deployments** - so the Okta sign-in / sign-out redirect
-  URIs and CORS origin are configured once and never need updating after a redeploy (previously every fresh CloudFront
-  distribution got a new random domain).
+  URIs and CORS origin are configured once and never need updating after a redeploy.
 - HTTPS with a certificate **issued for this domain**, so the browser shows a valid HTTPS lock icon (🔒) for `app.spring-boot-labs.uk`.
 
 **How it is wired:**
@@ -427,14 +426,6 @@ personal AWS account (region `eu-central-1`), except the CloudFront ACM certific
 - Use the `.nvmrc` file to set the Node.js version (`nvm use`)
 - A configured AWS CLI profile (default `personal-aws`): `aws configure --profile personal-aws`
 
-### AWS credentials
-
-Source the helper script (do **not** execute it) so the exported variables stay in your shell:
-
-```bash
-source aws-creds.sh [profile] [region]      # defaults: personal-aws, eu-central-1
-```
-
 ### Stacks
 
 Only one stack is deployed at a time - they intentionally reuse the same resource names (RDS identifier, MQ broker,
@@ -477,8 +468,8 @@ Possible values:
     - deploy stack: `-d`, `deploy`
     - show difference: `-f`, `diff`
     - remove stack: `-r`, `remove`
-- **stack**: `SpringBootLabsEc2Stack` or `SpringBootLabsEcsStack`
-- **region**: defaults to `eu-central-1`
+- **stack**: `SpringBootLabsEc2Stack`, `SpringBootLabsEcsStack` or `SiteCertificateStack` (the us-east-1 ACM certificate stack)
+- **region**: defaults to `eu-central-1` (use `us-east-1` for `SiteCertificateStack`)
 - **profile**: defaults to `personal-aws`
 
 Examples:
@@ -487,4 +478,5 @@ Examples:
 ./cdk-deploy-manual.sh -d SpringBootLabsEc2Stack     # deploy the EC2 stack
 ./cdk-deploy-manual.sh -f SpringBootLabsEcsStack     # diff the ECS stack
 ./cdk-deploy-manual.sh -r SpringBootLabsEc2Stack     # remove the EC2 stack
+./cdk-deploy-manual.sh -d SiteCertificateStack us-east-1   # deploy the ACM certificate stack (must be us-east-1)
 ```
