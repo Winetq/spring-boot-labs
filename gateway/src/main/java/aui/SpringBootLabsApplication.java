@@ -1,5 +1,6 @@
 package aui;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gateway.route.RouteLocator;
@@ -21,10 +22,18 @@ import static org.springframework.http.HttpMethod.PUT;
 public class SpringBootLabsApplication {
 
     private static final String ALLOW_ALL = "*";
-    private static final String GATEWAY_HOST = "localhost:8080";
-    private static final String COACH_HOST = "http://coach:8081";
-    private static final String SWIMMER_HOST = "http://swimmer:8082";
-    private static final String CLIENT_HOST = "http://localhost:8083";
+
+	@Value("${spring.gateway.host}")
+    private String GATEWAY_HOST;
+
+	@Value("${spring.coach.uri}")
+	private String COACH_HOST;
+
+	@Value("${spring.swimmer.uri}")
+	private String SWIMMER_HOST;
+
+	@Value("${spring.client.uri}")
+	private String CLIENT_HOST;
 
     public static void main(String[] args) {
 		SpringApplication.run(SpringBootLabsApplication.class, args);

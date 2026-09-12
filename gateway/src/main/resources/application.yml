@@ -4,6 +4,14 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://integrator-5997569.okta.com/oauth2/default
+  gateway:
+    host: ${GATEWAY_HOST}:${GATEWAY_PORT}
+  coach:
+    uri:  http://${COACH_HOST}:${COACH_PORT}
+  swimmer:
+    uri: http://${SWIMMER_HOST}:${SWIMMER_PORT}
+  client:
+    uri: http://${CLIENT_HOST}:${CLIENT_PORT}
 
 server:
   port: ${SERVER_PORT}

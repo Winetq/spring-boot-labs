@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coach-deployment
+  labels:
+    app: coach
+spec:
+  selector:
+    matchLabels:
+      app: coach
+  template:
+    metadata:
+      labels:
+        app: coach
+    spec:
+      containers:
+        - name: coach
+          image: mcwynar/spring-boot-labs:coach
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SERVER_PORT
+              value: "8081"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-password
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: postgres-coach-host
+            - name: POSTGRES_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: postgres-coach-database
+            - name: POSTGRES_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: postgres-port
+            - name: RABBIT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit-secret
+                  key: rabbit-user
+            - name: RABBIT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit-secret
+                  key: rabbit-password
+            - name: RABBIT_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbit-config
+                  key: rabbit-host
+            - name: RABBIT_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbit-config
+                  key: rabbit-port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coach-service
+spec:
+  selector:
+    app: coach
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081

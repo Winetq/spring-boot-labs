@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-coach-deployment
+  labels:
+    app: postgres-coach
+spec:
+  selector:
+    matchLabels:
+      app: postgres-coach
+  template:
+    metadata:
+      labels:
+        app: postgres-coach
+    spec:
+      containers:
+        - name: postgres-coach-db
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: postgres-coach-database
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-coach-service
+spec:
+  selector:
+    app: postgres-coach
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

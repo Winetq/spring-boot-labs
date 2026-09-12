@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbit-config
+data:
+  rabbit-host: rabbit-service
+  rabbit-port: "5672"

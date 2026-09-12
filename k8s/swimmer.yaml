@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swimmer-deployment
+  labels:
+    app: swimmer
+spec:
+  selector:
+    matchLabels:
+      app: swimmer
+  template:
+    metadata:
+      labels:
+        app: swimmer
+    spec:
+      containers:
+        - name: swimmer
+          image: mcwynar/spring-boot-labs:swimmer
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SERVER_PORT
+              value: "8082"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-password
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: postgres-swimmer-host
+            - name: POSTGRES_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: postgres-swimmer-database
+            - name: POSTGRES_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: postgres-port
+            - name: RABBIT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit-secret
+                  key: rabbit-user
+            - name: RABBIT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbit-secret
+                  key: rabbit-password
+            - name: RABBIT_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbit-config
+                  key: rabbit-host
+            - name: RABBIT_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbit-config
+                  key: rabbit-port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: swimmer-service
+spec:
+  selector:
+    app: swimmer
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082
