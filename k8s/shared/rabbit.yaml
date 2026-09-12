@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: rabbitmq
-          image: rabbitmq:4.2.0-management-alpine # moze jakis inny obraz bez dashboardu
+          image: rabbitmq:4.2.0-alpine
           ports:
             - containerPort: 5672
 ---
