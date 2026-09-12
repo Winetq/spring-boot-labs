@@ -16,11 +16,33 @@ spec:
       containers:
         - name: swimmer
           image: mcwynar/spring-boot-labs:swimmer
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 500m
           ports:
-            - containerPort: 8082
+            - name: http
+              containerPort: 8082
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            timeoutSeconds: 3
+            initialDelaySeconds: 60
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            timeoutSeconds: 3
+            initialDelaySeconds: 60
           env:
             - name: SERVER_PORT
               value: "8082"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=60"
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
