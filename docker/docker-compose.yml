@@ -78,6 +78,14 @@ services:
       - "8080:8080"
     environment:
       SERVER_PORT: 8080
+      GATEWAY_HOST: localhost
+      GATEWAY_PORT: 8080
+      COACH_HOST: coach
+      COACH_PORT: 8081
+      SWIMMER_HOST: swimmer
+      SWIMMER_PORT: 8082
+      CLIENT_HOST: localhost
+      CLIENT_PORT: 8083
     networks:
       - net
 

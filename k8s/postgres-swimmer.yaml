@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-swimmer-deployment
+  labels:
+    app: postgres-swimmer
+spec:
+  selector:
+    matchLabels:
+      app: postgres-swimmer
+  template:
+    metadata:
+      labels:
+        app: postgres-swimmer
+    spec:
+      containers:
+        - name: postgres-swimmer-db
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: postgres-swimmer-database
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-swimmer-service
+spec:
+  selector:
+    app: postgres-swimmer
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
