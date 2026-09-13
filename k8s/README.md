@@ -135,3 +135,17 @@ kubectl rollout restart deploy/frontend-deployment
 kubectl delete -R -f k8s/
 minikube stop
 ```
+
+## Next steps
+
+This setup is intentionally kept as **raw manifests** for learning. Natural follow-ups, if desired:
+
+- **Databases as StatefulSets (PVC / persistent storage).** The PostgreSQL pods currently run as plain
+  Deployments, so data is lost on restart - fine for this demo, but not how a stateful workload is run in
+  practice. Converting them to StatefulSets introduces **PersistentVolumeClaims** (durable storage), a stable
+  network identity (`postgres-0` + headless Service) and `volumeClaimTemplates` (one PVC per replica) - the
+  storage/identity concepts the stateless services never touch.
+- **Package the manifests as a Helm chart.** `coach.yaml` and `swimmer.yaml` are near-duplicates; Helm would
+  collapse them into a single template under `templates/` plus per-service `values.yaml` files, removing the
+  duplication and enabling per-environment values (dev/staging/prod), versioned releases and one-command
+  rollbacks (`helm rollback`).
