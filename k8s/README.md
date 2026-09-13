@@ -52,6 +52,61 @@ kubectl port-forward svc/gateway-service 30080:8080
 
 Then open **http://localhost:30000** in the browser and log in via Okta.
 
+## Resources, probes & autoscaling
+
+`coach.yaml` and `swimmer.yaml` are configured to mirror the production ECS setup:
+
+- **Resource requests/limits** - `requests: 256Mi / 100m`, `limits: 768Mi / 500m`. The request is the
+  scheduler's reservation (and the base for the HPA CPU %); the limit is the hard ceiling (CPU over-limit =
+  throttled, memory over-limit = **OOMKilled**). This puts the pods in the **Burstable** QoS class.
+- **`JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60`** - caps the JVM heap at 60% of the memory limit so the
+  container leaves headroom for threads, Metaspace and off-heap buffers. Without a memory limit the JVM sizes
+  the heap from the **whole node's** RAM and over-allocates (we measured the gateway drop from 607Mi to 305Mi
+  at idle just by adding a limit).
+- **`livenessProbe` / `readinessProbe`** on `/actuator/health` (named port `http`). Liveness failure →
+  kubelet **restarts** the container; readiness failure → pod is **removed from the Service endpoints** (no
+  traffic) but not restarted. Both run every `periodSeconds: 10` with `timeoutSeconds: 3`, executed by the
+  **kubelet** on the node (not the control plane).
+- **HorizontalPodAutoscaler** (`autoscaling/v2`) - target **CPU 60%** of the request, `minReplicas: 2`,
+  `maxReplicas: 4`. Requires `resources.requests.cpu` and the metrics-server addon
+  (`minikube addons enable metrics-server`). Since the CPU request is `100m`, the 60% threshold is only `60m`
+  per pod, so even light traffic triggers a scale-up.
+
+```bash
+# watch the autoscaler react (TARGETS shows current%/target%)
+kubectl get hpa -w
+
+# live resource usage per pod
+kubectl top pods
+
+# inspect the heap ceiling the JVM computed from the container limit (~60% of 768Mi)
+kubectl exec <coach-pod> -- sh -c 'java -XX:+PrintFlagsFinal -version 2>/dev/null | grep MaxHeapSize'
+```
+
+## Load testing (HPA in action)
+
+We hammered the gateway with [k6](https://k6.io/) (`load-test/load-test.js`, ramping up to **100 VUs over
+4 minutes**) against `/coaches` and `/swimmers` and tuned the manifests between runs. Each run scaled the
+targeted service `2 → 4` on CPU while the other stayed idle (the HPA scales **per service**, based on each
+one's real load).
+
+| Config | Fail rate | Checks OK | p95 latency | Throughput | Iterations |
+|--------|-----------|-----------|-------------|------------|------------|
+| **1.** `limits: 512Mi`, `minReplicas: 1` | 34.5% | 82.7% | 35.4s | 8 req/s | 1 967 |
+| **2.** `limits: 768Mi`, `minReplicas: 1` | 9.2% | 95.4% | 30.0s | 19 req/s | 4 578 |
+| **3.** `limits: 768Mi`, `minReplicas: 2` | **5.5%** | **97.2%** | **6.5s** | **37 req/s** | **8 996** |
+
+Takeaways:
+
+- **Run 1 → 2 (raise memory limit):** at `512Mi` the JVM was `OOMKilled` under load (heap + threads + Hikari +
+  RabbitMQ buffers exceeded the limit). Bumping to `768Mi` cut the fail rate from 34% to 9%.
+- **Run 2 → 3 (raise `minReplicas` to 2):** the biggest quality jump - **p95 dropped from 30s to 6.5s** and
+  throughput doubled. With two baseline pods the initial 100-VU burst is split instead of hammering a single
+  cold pod for ~60s (JVM startup) before the HPA can add replicas.
+- **Remaining ~5%:** this is the **cold-start** problem, not memory - a brand-new pod needs ~60s to become
+  `Ready`, so a sudden burst still overshoots briefly. Real fixes are a gentler traffic ramp, a faster startup
+  (GraalVM native image / CRaC), or a higher `minReplicas` - not more memory.
+
 ## Useful commands
 
 ```bash
