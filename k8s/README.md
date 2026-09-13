@@ -3,10 +3,10 @@
 This folder contains the Kubernetes configuration to run the whole project **locally on
 [minikube](https://minikube.sigs.k8s.io/)**. It mirrors the `docker/docker-compose.yml` setup: the two
 microservices (coach, swimmer), their PostgreSQL databases, RabbitMQ, the Spring Cloud Gateway and the static
-frontend — each as its own Deployment + Service.
+frontend - each as its own Deployment + Service.
 
 > This is a learning/local setup only. The production-grade AWS deployment lives in `infrastructure/` (AWS CDK).
-> The databases run as plain Deployments (no persistence yet) — data is lost when a pod restarts.
+> The databases run as plain Deployments (no persistence yet) - data is lost when a pod restarts.
 
 ## Layout
 
@@ -30,7 +30,7 @@ Requests fall into two categories:
   address, not internal DNS. Exposed via **NodePort** (frontend `30000`, gateway `30080`).
 
 On **macOS with the Docker driver** the minikube node IP (`minikube ip`) is usually **not reachable** from the
-host browser, so we use `kubectl port-forward` to bind stable `localhost` ports (see below). Because of this,
+host browser, so it's required to use `kubectl port-forward` to bind stable `localhost` ports (see below). Because of this,
 `configuration.js` (backend URL), the gateway `.host()` predicate and the CORS origin all use `localhost`.
 
 ## Run
@@ -42,10 +42,10 @@ minikube start
 # 2. apply everything (-R also descends into shared/)
 kubectl apply -R -f k8s/
 
-# 3. wait until all pods are Running (a service may restart once while the DB starts — that's fine)
+# 3. wait until all pods are Running
 kubectl get pods -w
 
-# 4. expose the frontend and gateway on stable localhost ports (each blocks — use two terminals)
+# 4. expose the frontend and gateway on stable localhost ports (each blocks - use two terminals)
 kubectl port-forward svc/frontend-service 30000:80
 kubectl port-forward svc/gateway-service 30080:8080
 ```
@@ -61,9 +61,8 @@ Then open **http://localhost:30000** in the browser and log in via Okta.
   throttled, memory over-limit = **OOMKilled**). This puts the pods in the **Burstable** QoS class.
 - **`JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60`** - caps the JVM heap at 60% of the memory limit so the
   container leaves headroom for threads, Metaspace and off-heap buffers. Without a memory limit the JVM sizes
-  the heap from the **whole node's** RAM and over-allocates (we measured the gateway drop from 607Mi to 305Mi
-  at idle just by adding a limit).
-- **`livenessProbe` / `readinessProbe`** on `/actuator/health` (named port `http`). Liveness failure →
+  the heap from the **whole node's** RAM and over-allocates.
+- **`livenessProbe` / `readinessProbe`** on `/actuator/health` (named port `http`) - Liveness failure →
   kubelet **restarts** the container; readiness failure → pod is **removed from the Service endpoints** (no
   traffic) but not restarted. Both run every `periodSeconds: 10` with `timeoutSeconds: 3`, executed by the
   **kubelet** on the node (not the control plane).
@@ -80,13 +79,13 @@ kubectl get hpa -w
 kubectl top pods
 
 # inspect the heap ceiling the JVM computed from the container limit (~60% of 768Mi)
-kubectl exec <coach-pod> -- sh -c 'java -XX:+PrintFlagsFinal -version 2>/dev/null | grep MaxHeapSize'
+kubectl exec <pod> -- sh -c 'java -XX:+PrintFlagsFinal -version 2>/dev/null | grep MaxHeapSize'
 ```
 
 ## Load testing (HPA in action)
 
-We hammered the gateway with [k6](https://k6.io/) (`load-test/load-test.js`, ramping up to **100 VUs over
-4 minutes**) against `/coaches` and `/swimmers` and tuned the manifests between runs. Each run scaled the
+The gateway was hammered with [k6](https://k6.io/) (`load-test/load-test.js`, ramping up to **100 VUs over
+4 minutes**) against `/coaches` and `/swimmers` and the manifests were tuned between runs. Each run scaled the
 targeted service `2 → 4` on CPU while the other stayed idle (the HPA scales **per service**, based on each
 one's real load).
 
@@ -120,14 +119,8 @@ kubectl get pods -w
 kubectl logs -f deploy/coach-deployment
 kubectl logs -f deploy/gateway-deployment
 
-# logs from a previous (crashed) container
-kubectl logs <pod> --previous
-
 # describe a pod (events: image pull, mount, OOM, scheduling...)
 kubectl describe pod <pod>
-
-# shell into a container
-kubectl exec -it <pod> -- sh
 
 # verify the mounted configuration.js actually overrode the image file
 kubectl exec deploy/frontend-deployment -- cat /usr/local/apache2/htdocs/js/configuration.js
@@ -135,7 +128,7 @@ kubectl exec deploy/frontend-deployment -- cat /usr/local/apache2/htdocs/js/conf
 # re-apply after editing a manifest (apply is idempotent)
 kubectl apply -f k8s/frontend.yaml
 
-# a ConfigMap mounted via subPath does NOT hot-reload — restart the pod after editing it
+# a ConfigMap mounted via subPath does NOT hot-reload - restart the pod after editing it
 kubectl rollout restart deploy/frontend-deployment
 
 # tear everything down
